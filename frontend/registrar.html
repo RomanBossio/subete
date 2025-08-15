@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrarse - Delishare</title>
+    <link rel="stylesheet" href="css/registrar.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+  <a href="inicio.html" class="back-link">
+    <i class="fas fa-arrow-left"></i> Volver al inicio
+  </a>
+
+  <div class="auth-page">
+    <div id="error" class="alert error" style="display:none;"></div>
+    <div id="success" class="alert success" style="display:none;"></div>
+
+    <div class="auth-container">
+      <div class="auth-logo">
+        <img src="Imagenes/Logo.png" alt="Logo Delishare">
+      </div>
+      <h1 class="auth-title">Crear Cuenta</h1>
+      <p class="auth-subtitle">Registrate para acceder</p>
+
+      <form id="registerForm">
+        <div class="form-group">
+          <label for="registerNombre">Nombre</label>
+          <input type="text" id="registerNombre" required />
+        </div>
+        <div class="form-group">
+          <label for="registerApellido">Apellido</label>
+          <input type="text" id="registerApellido" required />
+        </div>
+        <div class="form-group">
+          <label for="registerEmail">Correo electrónico</label>
+          <input type="email" id="registerEmail" required />
+        </div>
+        <div class="form-group">
+          <label for="registerTelefono">Teléfono (opcional)</label>
+          <input type="text" id="registerTelefono" />
+        </div>
+        <div class="form-group">
+          <label for="registerPassword">Contraseña</label>
+          <input type="password" id="registerPassword" required />
+        </div>
+        <button type="submit" class="btn-primary">
+          <i class="fas fa-user-plus"></i> Crear Cuenta
+        </button>
+      </form>
+
+      <p class="modal-footer" style="margin-top: 2rem;">
+        ¿Ya tienes cuenta? <a href="login.html">Inicia sesión</a>
+      </p>
+    </div>
+  </div>
+
+  <script src="js/registrar.js"></script>
+</body>
+</html>
