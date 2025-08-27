@@ -1,89 +1,98 @@
+<?php
+declare(strict_types=1);
+// session_start();  // <- lo desactivamos por ahora
+// if (!isset($_SESSION['user_id'])) {
+//   header('Location: /subete/frontend/login.html');
+//   exit;
+// }
+?>
+
 <!doctype html>
 <html lang="es">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Súbete · Buscar viajes</title>
+  <link rel="stylesheet" href="/subete/frontend/css/layout.css">
   <style>
-    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial;margin:16px}
-    h1{margin:0 0 8px}
-    form{padding:12px;border:1px solid #ddd;border-radius:12px}
+    /* estilos mínimos propios de esta página (podés moverlos a un .css luego) */
+    form{padding:12px;border:1px solid var(--stroke);border-radius:14px;background:#fff}
     .grid{display:grid;gap:10px}
     @media(min-width:720px){.grid{grid-template-columns:repeat(6,1fr)}}
     .col-2{grid-column:span 2}.col-3{grid-column:span 3}.col-6{grid-column:span 6}
     label{font-size:.9rem;color:#444;display:block;margin-bottom:4px}
-    input{width:100%;padding:10px;border:1px solid #ccc;border-radius:10px}
+    input{width:100%;padding:10px;border:1px solid var(--stroke);border-radius:10px}
     .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-    .btn{padding:10px 14px;border-radius:10px;border:1px solid #ccc;background:#f7f7f7;cursor:pointer}
-    .btn.primary{background:#00d4a6;border-color:#00d4a6;color:#082a22;font-weight:700}
     .badges{display:flex;gap:8px;margin:12px 0}
-    .badge{font-size:.85rem;padding:4px 10px;border:1px solid #ddd;border-radius:999px;color:#555}
-    pre{background:#f4f4f4;padding:10px;border:1px solid #ddd;border-radius:10px;max-width:100%;overflow:auto}
+    .badge{font-size:.85rem;padding:4px 10px;border:1px solid var(--stroke);border-radius:999px;color:#555;background:#fff}
     .results{display:grid;gap:10px}
-    .card{border:1px solid #ddd;border-radius:12px;padding:12px}
     .card h3{margin:0 0 6px}
     .meta{color:#555;margin:0 0 4px}
-    .pager{display:flex;gap:8px;justify-content:center;margin-top:10px}
+    pre{background:#f6f8fb;border:1px solid var(--stroke);border-radius:10px;padding:10px;overflow:auto}
   </style>
 </head>
 <body>
-  <h1>Buscar viajes</h1>
+  <?php require __DIR__ . '/partials/header.php'; ?>
 
-  <form id="searchForm">
-    <div class="grid">
-      <div class="col-3">
-        <label>Origen</label>
-        <input id="origen" placeholder="Córdoba" />
-      </div>
-      <div class="col-3">
-        <label>Destino</label>
-        <input id="destino" placeholder="Villa del Rosario" />
-      </div>
-      <div class="col-2">
-        <label>Fecha</label>
-        <input id="fecha" type="date" />
-      </div>
-      <div class="col-2">
-        <label>Asientos mínimos</label>
-        <input id="asientos" type="number" min="1" placeholder="1" />
-      </div>
-      <div class="col-2">
-        <label>Precio máx</label>
-        <input id="precioMax" type="number" min="0" step="50" placeholder="2500" />
-      </div>
-      <div class="col-2">
-        <label>&nbsp;</label>
-        <div class="row">
-          <input id="encomiendas" type="checkbox" />
-          <span>Acepta encomiendas</span>
+  <main class="container">
+    <h1>Buscar viajes</h1>
+
+    <form id="searchForm">
+      <div class="grid">
+        <div class="col-3">
+          <label>Origen</label>
+          <input id="origen" placeholder="Córdoba" />
+        </div>
+        <div class="col-3">
+          <label>Destino</label>
+          <input id="destino" placeholder="Villa del Rosario" />
+        </div>
+        <div class="col-2">
+          <label>Fecha</label>
+          <input id="fecha" type="date" />
+        </div>
+        <div class="col-2">
+          <label>Asientos mínimos</label>
+          <input id="asientos" type="number" min="1" placeholder="1" />
+        </div>
+        <div class="col-2">
+          <label>Precio máx</label>
+          <input id="precioMax" type="number" min="0" step="50" placeholder="2500" />
+        </div>
+        <div class="col-2">
+          <label>&nbsp;</label>
+          <div class="row">
+            <input id="encomiendas" type="checkbox" />
+            <span>Acepta encomiendas</span>
+          </div>
+        </div>
+        <div class="col-6 row">
+          <button class="btn primary" type="submit">Buscar</button>
+          <button class="btn" type="button" id="limpiar">Limpiar</button>
+          <button class="btn" type="button" id="toggleConductor">Ver datos del conductor</button>
         </div>
       </div>
-      <div class="col-6 row">
-        <button class="btn primary" type="submit">Buscar</button>
-        <button class="btn" type="button" id="limpiar">Limpiar</button>
-        <button class="btn" type="button" id="toggleConductor">Ver datos del conductor</button>
-      </div>
+    </form>
+
+    <div class="badges">
+      <span class="badge" id="badgeTotal">0 resultados</span>
+      <span class="badge">ordenados por salida</span>
     </div>
-  </form>
 
-  <div class="badges">
-    <span class="badge" id="badgeTotal">0 resultados</span>
-    <span class="badge">ordenados por salida</span>
-  </div>
+    <h3>Respuesta (JSON crudo)</h3>
+    <pre id="out"></pre>
 
-  <h3>Respuesta (JSON crudo)</h3>
-  <pre id="out"></pre>
+    <h2>Resultados</h2>
+    <div id="results" class="results"></div>
 
-  <h2>Resultados</h2>
-  <div id="results" class="results"></div>
-
-  <div class="pager">
-    <button class="btn" id="prev">Anterior</button>
-    <button class="btn" id="next">Siguiente</button>
-  </div>
+    <div class="row" style="justify-content:center;gap:8px;margin-top:10px">
+      <button class="btn" id="prev">Anterior</button>
+      <button class="btn" id="next">Siguiente</button>
+    </div>
+  </main>
 
 <script>
-// ⚠️ Ajustá esta URL a tu entorno; por tu captura anterior, así te funcionó:
+// ⚠️ Ruta de tu API (esta te venía funcionando)
 const API_URL = '/subete/backend/api/viajes/buscar-viajes.php';
 
 let limit = 10, offset = 0, includeConductor = 0;
@@ -91,7 +100,6 @@ const out = document.getElementById('out');
 const results = document.getElementById('results');
 const badgeTotal = document.getElementById('badgeTotal');
 
-// Eventos
 document.getElementById('searchForm').addEventListener('submit', (e) => { e.preventDefault(); offset = 0; buscar(); });
 document.getElementById('limpiar').addEventListener('click', () => { document.getElementById('searchForm').reset(); offset = 0; buscar(); });
 document.getElementById('toggleConductor').addEventListener('click', () => { includeConductor = includeConductor ? 0 : 1; buscar(); });
@@ -125,10 +133,7 @@ async function buscar(){
     const res = await fetch(`${API_URL}?${q.toString()}`);
     const data = await res.json();
 
-    // JSON crudo para debug
-    out.textContent = JSON.stringify(data, null, 2);
-
-    // Render y UI
+    out.textContent = JSON.stringify(data, null, 2); // debug
     renderResults(data.results || []);
     badgeTotal.textContent = `${data.total ?? 0} resultado${(data.total ?? 0) === 1 ? '' : 's'}`;
     document.getElementById('prev').disabled = offset === 0;
@@ -155,7 +160,7 @@ function renderResults(items){
         <p class="meta">Asientos: ${v.Lugares_Disponibles} · Precio: $${precio}</p>
         ${v.Detalles ? `<p class="meta">Detalles: ${v.Detalles}</p>` : ''}
         <div class="row" style="margin-top:6px;">
-          <a class="btn" href="detalle-viaje.html?id=${v.ID_Viaje}">Ver detalle</a>
+          <a class="btn" href="/subete/frontend/detalle-viaje.html?id=${v.ID_Viaje}">Ver detalle</a>
           <button class="btn">Reservar</button>
         </div>
       </article>
@@ -163,8 +168,7 @@ function renderResults(items){
   }).join('');
 }
 
-
-// Primera carga sin filtros
+// primera carga sin filtros
 buscar();
 </script>
 </body>
