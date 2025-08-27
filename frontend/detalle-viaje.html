@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Detalle de viaje</title>
+  <style>
+    body{font-family:system-ui,Segoe UI,Roboto;margin:16px}
+    .card{border:1px solid #ddd;border-radius:12px;padding:12px}
+    .meta{color:#555}
+    .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .btn{padding:10px 14px;border-radius:10px;border:1px solid #ccc;background:#f7f7f7;cursor:pointer}
+    .btn.primary{background:#00d4a6;border-color:#00d4a6;color:#082a22;font-weight:700}
+  </style>
+</head>
+<body>
+  <a href="buscar.html" class="btn">← Volver</a>
+  <h1>Detalle de viaje</h1>
+  <pre id="debug" style="background:#f4f4f4;padding:10px;border:1px solid #ddd;border-radius:10px;overflow:auto"></pre>
+  <div id="view" class="card"></div>
+
+<script>
+const API_URL = '/subete/backend/api/viajes/detalle.php'; // ajustar si hace falta
+const params = new URLSearchParams(location.search);
+const id = Number(params.get('id') || 0);
+const debug = document.getElementById('debug');
+const view  = document.getElementById('view');
+
+if (!id){ view.textContent = 'Falta id'; throw new Error('Falta id'); }
+
+(async () => {
+  try {
+    debug.textContent = 'Cargando...';
+    const res = await fetch(`${API_URL}?id=${id}`);
+    const data = await res.json();
+    debug.textContent = JSON.stringify(data, null, 2);
+
+    if (!data.ok) { view.textContent = data.error || 'Error'; return; }
+    const v = data.viaje;
+    const encom = Number(v.Permite_Encomiendas)===1 ? '✔ Acepta encomiendas' : 'No acepta encomiendas';
+    const precio = (Number(v.Precio)||0).toLocaleString('es-AR');
+
+    view.innerHTML = `
+      <h2>${v.Origen} → ${v.Destino}</h2>
+      <p class="meta">Salida: ${v.Fecha_Hora_Salida} · Estado: ${v.Estado}</p>
+      <p class="meta">Asientos: ${v.Lugares_Disponibles} · Precio: $${precio} · ${encom}</p>
+      ${v.Detalles ? `<p>${v.Detalles}</p>` : ''}
+      <hr />
+      <h3>Conductor</h3>
+      <p class="meta">${v.Conductor_Nombre ?? ''} ${v.Conductor_Apellido ?? ''}</p>
+      ${v.Conductor_Telefono ? `<p class="meta">Tel: ${v.Conductor_Telefono}</p>` : ''}
+      <div class="row" style="margin-top:8px;">
+        <button class="btn primary" onclick="alert('Reservar: próximamente')">Reservar</button>
+      </div>
+    `;
+  } catch (e) {
+    debug.textContent = 'Error: ' + e.message;
+    view.textContent = 'No se pudo cargar el detalle.';
+  }
+})();
+</script>
+</body>
+</html>
