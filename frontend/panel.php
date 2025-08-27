@@ -17,10 +17,10 @@ function api($ruta) {
 }
 
 // Consultas al backend
-$usuarios    = api("usuarios_totales.php");
-$viajes      = api("viajes_publicados.php");
-$nuevos      = api("nuevos_usuarios_semana.php");
-$confirmados = api("viajes_confirmados.php");
+$usuarios    = api("usuarios-totales.php");
+$viajes      = api("viajes-publicados.php");
+$nuevos      = api("nuevos-usuarios-semana.php");
+$confirmados = api("viajes-confirmados.php");
 ?>
 <!DOCTYPE html>
 <html lang="es">
