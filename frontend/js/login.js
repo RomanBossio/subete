@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Redirigir al dashboard después de 1 segundo
         setTimeout(() => {
-          window.location.href = "dashboard.html"; 
+          window.location.href = "home.php"; 
         }, 1000);
       }
 
