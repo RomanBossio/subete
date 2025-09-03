@@ -13,31 +13,15 @@ declare(strict_types=1);
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Súbete · Buscar viajes</title>
-  <link rel="stylesheet" href="/subete/frontend/css/layout.css">
-  <style>
-    /* estilos mínimos propios de esta página (podés moverlos a un .css luego) */
-    form{padding:12px;border:1px solid var(--stroke);border-radius:14px;background:#fff}
-    .grid{display:grid;gap:10px}
-    @media(min-width:720px){.grid{grid-template-columns:repeat(6,1fr)}}
-    .col-2{grid-column:span 2}.col-3{grid-column:span 3}.col-6{grid-column:span 6}
-    label{font-size:.9rem;color:#444;display:block;margin-bottom:4px}
-    input{width:100%;padding:10px;border:1px solid var(--stroke);border-radius:10px}
-    .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-    .badges{display:flex;gap:8px;margin:12px 0}
-    .badge{font-size:.85rem;padding:4px 10px;border:1px solid var(--stroke);border-radius:999px;color:#555;background:#fff}
-    .results{display:grid;gap:10px}
-    .card h3{margin:0 0 6px}
-    .meta{color:#555;margin:0 0 4px}
-    pre{background:#f6f8fb;border:1px solid var(--stroke);border-radius:10px;padding:10px;overflow:auto}
-  </style>
+  <link rel="stylesheet" href="css/app.css?v=1.0">
 </head>
 <body>
-  <?php require __DIR__ . '/partials/header.php'; ?>
+  <?php $page='buscar'; require __DIR__ . '/partials/header.php'; ?>
 
   <main class="container">
     <h1>Buscar viajes</h1>
 
-    <form id="searchForm">
+    <form id="searchForm" class="find-form">
       <div class="grid">
         <div class="col-3">
           <label>Origen</label>

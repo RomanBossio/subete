@@ -1,0 +1,198 @@
+/* ===== Base ===== */
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+:root{
+  --bg:#f6f8fb; --text:#0f1b2d; --muted:#5b6b86;
+  --card:#ffffff; --stroke:#e3e8ef; --primary:#00d4a6;
+}
+body{
+  margin:0;
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial;
+  background:var(--bg); color:var(--text);
+}
+
+/* ===== Header global ===== */
+.app-header{
+  display:flex; align-items:center; gap:12px;
+  padding:12px 16px;
+  background:#ffffffcc;
+  border-bottom:1px solid var(--stroke);
+  position:sticky; top:0; z-index:10;
+  backdrop-filter:saturate(120%) blur(6px);
+}
+.app-header .brand{ font-weight:800; letter-spacing:.2px }
+.app-header .nav{ margin-left:auto; display:flex; gap:8px }
+.app-header .nav a{
+  color:var(--text); text-decoration:none;
+  padding:8px 10px; border-radius:10px
+}
+.app-header .nav a:hover{ background:var(--stroke) }
+.app-header .nav a.active{
+  background:var(--primary); color:#07261f; font-weight:700
+}
+
+/* ===== Layout ===== */
+.container{ max-width:1000px; margin:16px auto; padding:0 16px }
+.section{ margin:20px 0 }
+.card{
+  background:var(--card); border:1px solid var(--stroke);
+  border-radius:14px; padding:14px
+}
+.muted{ color:var(--muted) }
+
+/* ===== Formularios ===== */
+form{display:grid; gap:12px}
+label{display:grid; gap:6px; font-size:14px; color:var(--muted)}
+input,select,textarea{
+  height:40px; padding:0 12px; background:#fff; color:var(--text);
+  border:1px solid var(--stroke); border-radius:10px
+}
+textarea{min-height:90px; padding:12px}
+input:focus,select:focus,textarea:focus{
+  outline:0; box-shadow:0 0 0 4px color-mix(in srgb, var(--primary) 25%, transparent)
+}
+
+/* ===== Botones ===== */
+.btn{
+  display:inline-block; padding:10px 14px; border-radius:10px;
+  border:1px solid var(--stroke); background:#f7f9fc; color:var(--text);
+  cursor:pointer; transition:.15s ease
+}
+.btn:hover{ transform:translateY(-1px) }
+.btn.primary{ background:var(--primary); border-color:var(--primary); color:#07261f; font-weight:700 }
+.btn.ghost{ background:transparent }
+
+/* ===== Grid utilitaria ===== */
+.grid{ display:grid; gap:12px }
+.grid.cols-2{ grid-template-columns: 1fr 1fr }
+.grid.cols-3{ grid-template-columns: repeat(3,1fr) }
+.grid.cols-4{ grid-template-columns: repeat(4,1fr) }
+.col-2{ grid-column: span 2 }
+.col-3{ grid-column: span 3 }
+.col-4{ grid-column: span 4 }
+
+/* ===== Tabla común ===== */
+.table{ width:100%; border-collapse:collapse; background:#fff;
+  border:1px solid var(--stroke); border-radius:12px; overflow:hidden }
+.table th,.table td{ padding:10px 12px; border-bottom:1px solid var(--stroke); text-align:left }
+.table th{ background:#f6f8fb; color:var(--muted); font-weight:600 }
+.table tr:last-child td{ border-bottom:none }
+
+/* ===== Helpers ===== */
+.center{ display:grid; place-items:center }
+.right{ text-align:right }
+.mt-1{margin-top:4px} .mt-2{margin-top:8px} .mt-3{margin-top:12px} .mt-4{margin-top:16px}
+
+/* ===== Responsive ===== */
+@media (max-width:720px){
+  .container{ max-width:100%; margin:12px auto; padding:0 12px }
+  .grid.cols-2,.grid.cols-3,.grid.cols-4{ grid-template-columns:1fr }
+  .app-header .nav{ gap:6px }
+  .app-header .nav a{ padding:8px 10px }
+}
+
+/* ====== Buscar viajes (estilos reutilizables) ====== */
+form.find-form{ padding:12px; border:1px solid var(--stroke); border-radius:14px; background:#fff; }
+
+.grid{ display:grid; gap:10px }
+@media (min-width:720px){ .grid{ grid-template-columns:repeat(6,1fr) } }
+.col-2{ grid-column:span 2 } .col-3{ grid-column:span 3 } .col-6{ grid-column:span 6 }
+
+label{ font-size:.9rem; color:#444; display:block; margin-bottom:4px }
+input[type="text"], input[type="number"], input[type="date"]{
+  width:100%; padding:10px; border:1px solid var(--stroke); border-radius:10px; background:#fff; color:var(--text);
+}
+
+.row{ display:flex; gap:8px; align-items:center; flex-wrap:wrap }
+
+.badges{ display:flex; gap:8px; margin:12px 0 }
+.badge{ font-size:.85rem; padding:4px 10px; border:1px solid var(--stroke); border-radius:999px; color:#555; background:#fff }
+
+.results{ display:grid; gap:10px }
+
+.card h3{ margin:0 0 6px }
+.meta{ color:#555; margin:0 0 4px }
+
+pre#out{ background:#f6f8fb; border:1px solid var(--stroke); border-radius:10px; padding:10px; overflow:auto }
+
+/* Botones extra */
+.btn[disabled]{ opacity:.5; cursor:not-allowed }
+
+/* ===== Hero ===== */
+.hero{
+  display:grid; gap:16px; align-items:center;
+  grid-template-columns: 1.1fr .9fr;
+  background: linear-gradient(180deg,#ffffff 0%, #f6f8fb 100%);
+  border:1px solid var(--stroke); border-radius:16px; padding:18px;
+}
+.hero h1{font-size:36px; line-height:1.15; margin:0}
+.hero p.lead{color:var(--muted); font-size:1.05rem}
+.hero .actions{display:flex; gap:10px; flex-wrap:wrap; margin-top:6px}
+.hero img{width:100%; height:auto; border-radius:14px; border:1px solid var(--stroke); background:#fff;}
+
+/* ===== Badges de stats ===== */
+.stats{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px}
+.stat{background:#fff; border:1px solid var(--stroke); border-radius:12px; padding:10px 12px; font-weight:700}
+.stat small{display:block; color:var(--muted); font-weight:600}
+
+/* ===== Sección genérica con título + grid de tarjetas ===== */
+.section-title{font-size:24px; margin:18px 0 10px}
+.cards{display:grid; gap:12px}
+.cards.cols-3{grid-template-columns:repeat(3,1fr)}
+.card.icon{display:grid; gap:6px}
+.card .icon-emoji{font-size:24px}
+
+/* ===== Paso a paso ===== */
+.steps{display:grid; gap:12px; grid-template-columns:repeat(3,1fr)}
+.step{background:#fff; border:1px solid var(--stroke); border-radius:12px; padding:14px}
+.step h3{margin:0 0 4px; font-size:18px}
+.step p{margin:0; color:var(--muted)}
+
+/* ===== Galería ===== */
+.gallery{display:grid; gap:8px; grid-template-columns:repeat(4,1fr)}
+.gallery img{width:100%; height:150px; object-fit:cover; border-radius:10px; border:1px solid var(--stroke); background:#fff}
+
+/* ===== Testimonios ===== */
+.testimonials{display:grid; gap:12px; grid-template-columns:repeat(3,1fr)}
+.quote{background:#fff; border:1px solid var(--stroke); border-radius:12px; padding:14px}
+.quote p{margin:0 0 8px; color:#38465b}
+.quote .who{color:var(--muted); font-weight:600}
+
+/* ===== Footer ===== */
+.site-footer{margin-top:18px; padding:16px; border:1px solid var(--stroke); border-radius:12px; background:#fff; color:var(--muted); text-align:center}
+
+/* ===== Responsive ===== */
+@media (max-width:900px){
+  .hero{grid-template-columns:1fr}
+  .cards.cols-3{grid-template-columns:1fr}
+  .steps{grid-template-columns:1fr}
+  .gallery{grid-template-columns:repeat(2,1fr)}
+  .testimonials{grid-template-columns:1fr}
+}
+
+/* ===== Hero y stats para Home ===== */
+.hero{
+  display:grid; gap:16px; align-items:center;
+  grid-template-columns: 1.1fr .9fr;
+  background: linear-gradient(180deg,#ffffff 0%, #f6f8fb 100%);
+  border:1px solid var(--stroke); border-radius:16px; padding:18px;
+}
+.hero h1{font-size:36px; line-height:1.15; margin:0}
+.hero p.lead{color:var(--muted); font-size:1.05rem}
+.hero .actions{display:flex; gap:10px; flex-wrap:wrap; margin-top:6px}
+.hero img{width:100%; height:auto; border-radius:14px; border:1px solid var(--stroke); background:#fff;}
+
+.stats{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px}
+.stat{
+  background:#fff; border:1px solid var(--stroke); border-radius:12px; padding:10px 12px;
+  font-weight:700; min-width:160px; display:flex; flex-direction:column; gap:2px
+}
+.stat small{color:var(--muted); font-weight:600}
+
+/* tarjetas y resultados (reutiliza lo que ya tenés) */
+.results{ display:grid; gap:10px }
+
+/* responsive */
+@media (max-width:900px){
+  .hero{grid-template-columns:1fr}
+}
