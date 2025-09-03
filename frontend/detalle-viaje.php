@@ -1,26 +1,26 @@
+<?php $page=''; ?>
 <!doctype html>
 <html lang="es">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Detalle de viaje</title>
-  <style>
-    body{font-family:system-ui,Segoe UI,Roboto;margin:16px}
-    .card{border:1px solid #ddd;border-radius:12px;padding:12px}
-    .meta{color:#555}
-    .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-    .btn{padding:10px 14px;border-radius:10px;border:1px solid #ccc;background:#f7f7f7;cursor:pointer}
-    .btn.primary{background:#00d4a6;border-color:#00d4a6;color:#082a22;font-weight:700}
-  </style>
+  <link rel="stylesheet" href="/subete/frontend/css/app.css?v=1.0">
 </head>
 <body>
-  <a href="buscar.html" class="btn">← Volver</a>
-  <h1>Detalle de viaje</h1>
-  <pre id="debug" style="background:#f4f4f4;padding:10px;border:1px solid #ddd;border-radius:10px;overflow:auto"></pre>
-  <div id="view" class="card"></div>
+  <?php require __DIR__ . '/partials/header.php'; ?>
+
+  <main class="container">
+    <a href="/subete/frontend/buscar.php" class="btn">← Volver</a>
+    <h1 class="mt-3">Detalle de viaje</h1>
+
+    <pre id="debug" class="mt-2" style="background:#f6f8fb;border:1px solid var(--stroke);border-radius:10px;padding:10px;overflow:auto"></pre>
+    <div id="view" class="card mt-2"></div>
+  </main>
 
 <script>
-const API_URL = '/subete/backend/api/viajes/detalle.php'; // ajustar si hace falta
+// Misma ruta que usabas:
+const API_URL = '/subete/backend/api/viajes/detalle.php';
 const params = new URLSearchParams(location.search);
 const id = Number(params.get('id') || 0);
 const debug = document.getElementById('debug');
@@ -42,15 +42,19 @@ if (!id){ view.textContent = 'Falta id'; throw new Error('Falta id'); }
 
     view.innerHTML = `
       <h2>${v.Origen} → ${v.Destino}</h2>
-      <p class="meta">Salida: ${v.Fecha_Hora_Salida} · Estado: ${v.Estado}</p>
-      <p class="meta">Asientos: ${v.Lugares_Disponibles} · Precio: $${precio} · ${encom}</p>
-      ${v.Detalles ? `<p>${v.Detalles}</p>` : ''}
-      <hr />
-      <h3>Conductor</h3>
-      <p class="meta">${v.Conductor_Nombre ?? ''} ${v.Conductor_Apellido ?? ''}</p>
-      ${v.Conductor_Telefono ? `<p class="meta">Tel: ${v.Conductor_Telefono}</p>` : ''}
-      <div class="row" style="margin-top:8px;">
+      <p class="muted">Salida: ${v.Fecha_Hora_Salida} · Estado: ${v.Estado}</p>
+      <p class="muted">Asientos: ${v.Lugares_Disponibles} · Precio: $${precio} · ${encom}</p>
+      ${v.Detalles ? `<p class="mt-2">${v.Detalles}</p>` : ''}
+
+      <div class="card mt-3">
+        <h3>Conductor</h3>
+        <p class="mt-2">${v.Conductor_Nombre ?? ''} ${v.Conductor_Apellido ?? ''}</p>
+        ${v.Conductor_Telefono ? `<p class="muted">Tel: ${v.Conductor_Telefono}</p>` : ''}
+      </div>
+
+      <div class="mt-3">
         <button class="btn primary" onclick="alert('Reservar: próximamente')">Reservar</button>
+        <a class="btn" href="/subete/frontend/buscar.php">Volver</a>
       </div>
     `;
   } catch (e) {
