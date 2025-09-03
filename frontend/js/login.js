@@ -12,8 +12,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const password = document.getElementById("password").value.trim();
 
     try {
-      // Ruta correcta según tu estructura de carpetas
-      const response = await fetch("../backend/api/auth/login.php", {
+      // Ruta correcta al backend (ajustada a absoluta)
+      const response = await fetch("/subete/backend/api/auth/login.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password })
@@ -26,16 +26,22 @@ document.addEventListener("DOMContentLoaded", () => {
         alertBox.textContent = data.error || "Error en el login";
         alertBox.className = "alert error show";
       } else {
-        // Login exitoso
+        // ✅ Login exitoso
         alertBox.textContent = "✅ Bienvenido " + data.usuario.nombre;
         alertBox.className = "alert success show";
 
         // Guardar datos del usuario en localStorage
         localStorage.setItem("usuario", JSON.stringify(data.usuario));
+        localStorage.setItem("rol", data.usuario.rol); // opcional
 
-        // Redirigir al dashboard después de 1 segundo
+        // ✅ Redirigir al home según el rol
         setTimeout(() => {
-          window.location.href = "dashboard.html"; 
+          const rol = data.usuario.rol;
+          if (rol === "admin") {
+            window.location.href = "/subete/frontend/home-admin.php";
+          } else {
+            window.location.href = "/subete/frontend/home.php";
+          }
         }, 1000);
       }
 
