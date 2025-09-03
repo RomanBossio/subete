@@ -28,7 +28,7 @@ $confirmados = api("viajes_confirmados.php");
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Panel de Control - Súbete</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="/subete/frontend/css/app.css?v=1.0">
   <style>
     body { background-color: #f4f6f9; font-family: 'Segoe UI', sans-serif; }
     .card { border: none; border-radius: 1rem; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
@@ -37,6 +37,7 @@ $confirmados = api("viajes_confirmados.php");
   </style>
 </head>
 <body>
+  <?php require __DIR__ . '/partials/header.php'; ?>
   <div class="container py-4">
     <h1 class="dashboard-title text-center">Panel de Control - Súbete 🚗</h1>
 
