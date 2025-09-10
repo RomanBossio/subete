@@ -1,4 +1,10 @@
 <?php $page='crear'; ?>
+<?php
+// 🔒 Esto SIEMPRE va primero
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
+header('Expires: 0');
+?>
 <!doctype html>
 <html lang="es">
 <head>
@@ -36,20 +42,44 @@
   <script>
   const f = document.getElementById('form-viaje');
   const msg = document.getElementById('msg');
-  f.addEventListener('submit', async (e)=>{
+
+  f.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const data = Object.fromEntries(new FormData(f).entries());
+    const formData = Object.fromEntries(new FormData(f).entries());
+
+    const usuario = JSON.parse(localStorage.getItem("usuario"));
+    if (!usuario || !usuario.id) {
+      msg.textContent = "⚠️ No se pudo obtener el ID del conductor. Reingresá sesión.";
+      return;
+    }
+
+    // Combinar fecha y hora al formato que espera el backend
+    const fechaHora = `${formData.fecha} ${formData.hora}:00`;
+
+    const datos = {
+      id_conductor: usuario.id,
+      origen: formData.origen,
+      destino: formData.destino,
+      fecha_hora_salida: fechaHora,
+      lugares: formData.asientos,
+      precio: formData.precio,
+      permite_encomiendas: 0,
+      detalles: formData.descripcion
+    };
+
     const res = await fetch('../backend/api/viajes/crear-viajes.php', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(data)
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(datos)
     });
-    const out = await res.json().catch(()=>({}));
-    if(res.ok && !out.error){
-      msg.textContent = 'Viaje publicado con éxito';
+
+    const out = await res.json().catch(() => ({}));
+
+    if (res.ok && !out.error) {
+      msg.textContent = '✅ Viaje publicado con éxito';
       f.reset();
-    }else{
-      msg.textContent = out.error || 'Error al publicar';
+    } else {
+      msg.textContent = `❌ ${out.error || 'Error al publicar el viaje'}`;
     }
   });
   </script>
