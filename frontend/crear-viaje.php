@@ -15,13 +15,15 @@
       <h2>Publicar viaje</h2>
       <form id="form-viaje">
         <div class="grid cols-2">
-          <label>Origen<input name="origen" required></label>
-          <label>Destino<input name="destino" required></label>
-        </div>
-        <div class="grid cols-2">
-          <label>Fecha<input type="date" name="fecha" required></label>
-          <label>Hora<input type="time" name="hora" required></label>
-        </div>
+  <label>Origen
+    <input name="origen" id="origen" list="origenList" required>
+    <datalist id="origenList"></datalist>
+  </label>
+  <label>Destino
+    <input name="destino" id="destino" list="destinoList" required>
+    <datalist id="destinoList"></datalist>
+  </label>
+</div>
         <div class="grid cols-2">
           <label>Precio<input type="number" step="0.01" name="precio" required></label>
           <label>Asientos<input type="number" name="asientos" min="1" max="6" required></label>
@@ -52,6 +54,37 @@
       msg.textContent = out.error || 'Error al publicar';
     }
   });
+  // ------------------ Autocompletado de ciudades ------------------
+async function cargarCiudades(inputId, listId) {
+  const input = document.getElementById(inputId);
+  const list  = document.getElementById(listId);
+
+  input.addEventListener('input', async () => {
+    const query = input.value.trim();
+    if (query.length < 3) return; // esperamos a 3 letras mín.
+
+    try {
+      const res = await fetch(`https://apis.datos.gob.ar/georef/api/localidades?nombre=${encodeURIComponent(query)}&max=10`);
+      const data = await res.json();
+
+      list.innerHTML = '';
+      if (data.localidades) {
+        data.localidades.forEach(loc => {
+          const opt = document.createElement('option');
+          opt.value = `${loc.nombre} (${loc.provincia.nombre})`;
+          list.appendChild(opt);
+        });
+      }
+    } catch (err) {
+      console.error("Error cargando ciudades:", err);
+    }
+  });
+}
+
+// activar para origen y destino
+cargarCiudades('origen', 'origenList');
+cargarCiudades('destino', 'destinoList');
+
   </script>
 </body>
 </html>

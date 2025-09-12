@@ -23,14 +23,18 @@ declare(strict_types=1);
 
     <form id="searchForm" class="find-form">
       <div class="grid">
-        <div class="col-3">
-          <label>Origen</label>
-          <input id="origen" placeholder="Córdoba" />
-        </div>
-        <div class="col-3">
-          <label>Destino</label>
-          <input id="destino" placeholder="Villa del Rosario" />
-        </div>
+       <div class="col-3">
+  <label>Origen</label>
+  <input id="origen" list="origenList" placeholder="Córdoba" />
+  <datalist id="origenList"></datalist>
+</div>
+
+<div class="col-3">
+  <label>Destino</label>
+  <input id="destino" list="destinoList" placeholder="Villa del Rosario" />
+  <datalist id="destinoList"></datalist>
+</div>
+
         <div class="col-2">
           <label>Fecha</label>
           <input id="fecha" type="date" />
@@ -154,6 +158,36 @@ function renderResults(items){
 
 // primera carga sin filtros
 buscar();
+async function cargarCiudades(inputId, listId) {
+  const input = document.getElementById(inputId);
+  const list  = document.getElementById(listId);
+
+  input.addEventListener('input', async () => {
+    const query = input.value.trim();
+    if (query.length < 3) return; // esperamos a 3 letras mín.
+
+    try {
+      const res = await fetch(`https://apis.datos.gob.ar/georef/api/localidades?nombre=${encodeURIComponent(query)}&max=10`);
+      const data = await res.json();
+
+      list.innerHTML = '';
+      if (data.localidades) {
+        data.localidades.forEach(loc => {
+          const opt = document.createElement('option');
+          opt.value = `${loc.nombre} (${loc.provincia.nombre})`;
+          list.appendChild(opt);
+        });
+      }
+    } catch (err) {
+      console.error("Error cargando ciudades:", err);
+    }
+  });
+}
+
+// activar para origen y destino
+cargarCiudades('origen', 'origenList');
+cargarCiudades('destino', 'destinoList');
+
 </script>
 </body>
 </html>
