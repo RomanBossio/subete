@@ -23,17 +23,17 @@ declare(strict_types=1);
 
     <form id="searchForm" class="find-form">
       <div class="grid">
-       <div class="col-3">
-  <label>Origen</label>
-  <input id="origen" list="origenList" placeholder="Córdoba" />
-  <datalist id="origenList"></datalist>
-</div>
+        <div class="col-3">
+          <label>Origen</label>
+          <input id="origen" list="origenList" placeholder="Córdoba" />
+          <datalist id="origenList"></datalist>
+        </div>
 
-<div class="col-3">
-  <label>Destino</label>
-  <input id="destino" list="destinoList" placeholder="Villa del Rosario" />
-  <datalist id="destinoList"></datalist>
-</div>
+        <div class="col-3">
+          <label>Destino</label>
+          <input id="destino" list="destinoList" placeholder="Villa del Rosario" />
+          <datalist id="destinoList"></datalist>
+        </div>
 
         <div class="col-2">
           <label>Fecha</label>
@@ -67,9 +67,6 @@ declare(strict_types=1);
       <span class="badge">ordenados por salida</span>
     </div>
 
-    <h3>Respuesta (JSON crudo)</h3>
-    <pre id="out"></pre>
-
     <h2>Resultados</h2>
     <div id="results" class="results"></div>
 
@@ -80,18 +77,16 @@ declare(strict_types=1);
   </main>
 
 <script>
-// ⚠️ Ruta de tu API (esta te venía funcionando)
 const API_URL = '/subete/backend/api/viajes/buscar-viajes.php';
-
 let limit = 10, offset = 0, includeConductor = 0;
-const out = document.getElementById('out');
+
 const results = document.getElementById('results');
 const badgeTotal = document.getElementById('badgeTotal');
 
-document.getElementById('searchForm').addEventListener('submit', (e) => { e.preventDefault(); offset = 0; buscar(); });
-document.getElementById('limpiar').addEventListener('click', () => { document.getElementById('searchForm').reset(); offset = 0; buscar(); });
+document.getElementById('searchForm').addEventListener('submit', e => { e.preventDefault(); offset=0; buscar(); });
+document.getElementById('limpiar').addEventListener('click', () => { document.getElementById('searchForm').reset(); offset=0; buscar(); });
 document.getElementById('toggleConductor').addEventListener('click', () => { includeConductor = includeConductor ? 0 : 1; buscar(); });
-document.getElementById('prev').addEventListener('click', () => { offset = Math.max(0, offset - limit); buscar(); });
+document.getElementById('prev').addEventListener('click', () => { offset = Math.max(0, offset-limit); buscar(); });
 document.getElementById('next').addEventListener('click', () => { offset += limit; buscar(); });
 
 async function buscar(){
@@ -111,23 +106,19 @@ async function buscar(){
   if (encom !== '') q.set('permite_encomiendas', encom);
 
   q.set('include_conductor', includeConductor);
-  q.set('limit',  limit);
+  q.set('limit', limit);
   q.set('offset', offset);
 
-  out.textContent = 'Cargando...';
   results.innerHTML = '<div class="card">Cargando...</div>';
 
   try {
     const res = await fetch(`${API_URL}?${q.toString()}`);
     const data = await res.json();
-
-    out.textContent = JSON.stringify(data, null, 2); // debug
     renderResults(data.results || []);
-    badgeTotal.textContent = `${data.total ?? 0} resultado${(data.total ?? 0) === 1 ? '' : 's'}`;
+    badgeTotal.textContent = `${data.total ?? 0} resultado${(data.total ?? 0)===1?'':'s'}`;
     document.getElementById('prev').disabled = offset === 0;
-    document.getElementById('next').disabled = (offset + limit) >= (data.total ?? 0);
+    document.getElementById('next').disabled = (offset+limit) >= (data.total ?? 0);
   } catch (err) {
-    out.textContent = 'Error: ' + err.message;
     results.innerHTML = '<div class="card">No se pudo cargar la búsqueda.</div>';
   }
 }
@@ -138,15 +129,15 @@ function renderResults(items){
     return;
   }
   results.innerHTML = items.map(v => {
-    const encom = Number(v.Permite_Encomiendas) === 1 ? ' · ✔ Encomiendas' : '';
-    const cond  = v.Conductor_Nombre ? ` · ${v.Conductor_Nombre} ${v.Conductor_Apellido}` : '';
+    const encom = Number(v.Permite_Encomiendas)===1?' · ✔ Encomiendas':'';
+    const cond  = v.Conductor_Nombre?` · ${v.Conductor_Nombre} ${v.Conductor_Apellido}`:'';
     const precio = (Number(v.Precio)||0).toLocaleString('es-AR');
     return `
       <article class="card">
         <h3>${v.Origen} → ${v.Destino}</h3>
         <p class="meta">Sale: ${v.Fecha_Hora_Salida}${cond}${encom}</p>
         <p class="meta">Asientos: ${v.Lugares_Disponibles} · Precio: $${precio}</p>
-        ${v.Detalles ? `<p class="meta">Detalles: ${v.Detalles}</p>` : ''}
+        ${v.Detalles?`<p class="meta">Detalles: ${v.Detalles}</p>`:''}
         <div class="row" style="margin-top:6px;">
           <a class="btn" href="/subete/frontend/detalle-viaje.html?id=${v.ID_Viaje}">Ver detalle</a>
           <button class="btn">Reservar</button>
@@ -156,37 +147,35 @@ function renderResults(items){
   }).join('');
 }
 
-// primera carga sin filtros
+// primera carga
 buscar();
+
 async function cargarCiudades(inputId, listId) {
   const input = document.getElementById(inputId);
-  const list  = document.getElementById(listId);
-
+  const list = document.getElementById(listId);
   input.addEventListener('input', async () => {
     const query = input.value.trim();
-    if (query.length < 3) return; // esperamos a 3 letras mín.
-
+    if (query.length<3) return;
     try {
       const res = await fetch(`https://apis.datos.gob.ar/georef/api/localidades?nombre=${encodeURIComponent(query)}&max=10`);
       const data = await res.json();
-
       list.innerHTML = '';
-      if (data.localidades) {
-        data.localidades.forEach(loc => {
+      if (data.localidades){
+        data.localidades.forEach(loc=>{
           const opt = document.createElement('option');
           opt.value = `${loc.nombre} (${loc.provincia.nombre})`;
           list.appendChild(opt);
         });
       }
-    } catch (err) {
+    } catch(err){
       console.error("Error cargando ciudades:", err);
     }
   });
 }
 
-// activar para origen y destino
-cargarCiudades('origen', 'origenList');
-cargarCiudades('destino', 'destinoList');
+// activar autocompletado
+cargarCiudades('origen','origenList');
+cargarCiudades('destino','destinoList');
 
 </script>
 </body>
