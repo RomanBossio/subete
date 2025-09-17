@@ -13,7 +13,7 @@
   <main class="container">
     <div class="card" style="max-width:520px;margin:auto">
       <div class="auth-logo" style="text-align:center;margin-bottom:12px">
-        <img src="/subete/frontend/img/hero-carpool.jpg" alt="Logo" style="max-height:60px;object-fit:contain"> <!-- opcional -->
+        <img src="/subete/frontend/img/hero-carpool.jpg" alt="Logo" style="max-height:60px;object-fit:contain">
       </div>
       <h2 class="auth-title">Iniciar Sesión</h2>
       <p class="auth-subtitle muted">Ingresa tus credenciales para continuar</p>
@@ -38,7 +38,43 @@
     </div>
   </main>
 
-  <!-- mantiene tu JS existente -->
-  <script src="/subete/frontend/js/login.js"></script>
+<script>
+const loginForm = document.getElementById('loginForm');
+const alertDiv = document.getElementById('alert');
+
+loginForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  alertDiv.textContent = '';
+
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value.trim();
+
+  try {
+    const res = await fetch('../backend/api/auth/login.php', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({email, password})
+    });
+
+    const out = await res.json();
+
+    if (res.ok && !out.error) {
+      // Guardar token y datos del usuario en localStorage
+      if (out.token) {
+        localStorage.setItem('token', out.token);
+        localStorage.setItem('usuario', JSON.stringify(out.usuario));
+      }
+      window.location.href = '/subete/frontend/home.php';
+    } else {
+      alertDiv.textContent = out.error || 'Error al iniciar sesión';
+    }
+
+  } catch (err) {
+    console.error(err);
+    alertDiv.textContent = 'Error de conexión';
+  }
+});
+</script>
+
 </body>
 </html>

@@ -15,19 +15,27 @@
       <h2>Publicar viaje</h2>
       <form id="form-viaje">
         <div class="grid cols-2">
-  <label>Origen
-    <input name="origen" id="origen" list="origenList" required>
-    <datalist id="origenList"></datalist>
-  </label>
-  <label>Destino
-    <input name="destino" id="destino" list="destinoList" required>
-    <datalist id="destinoList"></datalist>
-  </label>
-</div>
+          <label>Origen
+            <input name="origen" id="origen" list="origenList" required>
+            <datalist id="origenList"></datalist>
+          </label>
+          <label>Destino
+            <input name="destino" id="destino" list="destinoList" required>
+            <datalist id="destinoList"></datalist>
+          </label>
+        </div>
+
+        <div class="grid cols-2">
+          <label>Fecha y hora de salida
+            <input type="datetime-local" name="fecha_hora_salida" required>
+          </label>
+        </div>
+
         <div class="grid cols-2">
           <label>Precio<input type="number" step="0.01" name="precio" required></label>
-          <label>Asientos<input type="number" name="asientos" min="1" max="6" required></label>
+          <label>Asientos<input type="number" name="lugares" min="1" max="6" required></label>
         </div>
+
         <label>Descripción<textarea name="descripcion" rows="3"></textarea></label>
         <button class="btn primary" type="submit">Publicar</button>
       </form>
@@ -35,38 +43,64 @@
     </div>
   </main>
 
-  <script>
-  const f = document.getElementById('form-viaje');
-  const msg = document.getElementById('msg');
-  f.addEventListener('submit', async (e)=>{
-    e.preventDefault();
-    const data = Object.fromEntries(new FormData(f).entries());
+<script>
+const f = document.getElementById('form-viaje');
+const msg = document.getElementById('msg');
+
+f.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const formData = new FormData(f);
+
+  // Convertir datetime-local a formato que espera el backend: YYYY-MM-DD HH:MM:SS
+  const dtInput = formData.get('fecha_hora_salida'); // Ej: 2025-09-17T10:30
+  if (dtInput) {
+    formData.set('fecha_hora_salida', dtInput.replace('T', ' ') + ':00');
+  }
+
+  const data = Object.fromEntries(formData.entries());
+
+  // Obtener token del localStorage
+  const token = localStorage.getItem("token");
+  if (!token) {
+    msg.textContent = "Debes iniciar sesión para publicar un viaje";
+    return;
+  }
+
+  try {
     const res = await fetch('../backend/api/viajes/crear-viajes.php', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
       body: JSON.stringify(data)
     });
-    const out = await res.json().catch(()=>({}));
-    if(res.ok && !out.error){
+
+    const out = await res.json().catch(() => ({}));
+    if (res.ok && !out.error) {
       msg.textContent = 'Viaje publicado con éxito';
       f.reset();
-    }else{
+    } else {
       msg.textContent = out.error || 'Error al publicar';
     }
-  });
-  // ------------------ Autocompletado de ciudades ------------------
+  } catch (err) {
+    console.error(err);
+    msg.textContent = 'Error de conexión al servidor';
+  }
+});
+
+// ------------------ Autocompletado de ciudades ------------------
 async function cargarCiudades(inputId, listId) {
   const input = document.getElementById(inputId);
   const list  = document.getElementById(listId);
 
   input.addEventListener('input', async () => {
     const query = input.value.trim();
-    if (query.length < 3) return; // esperamos a 3 letras mín.
+    if (query.length < 3) return;
 
     try {
       const res = await fetch(`https://apis.datos.gob.ar/georef/api/localidades?nombre=${encodeURIComponent(query)}&max=10`);
       const data = await res.json();
-
       list.innerHTML = '';
       if (data.localidades) {
         data.localidades.forEach(loc => {
@@ -81,10 +115,9 @@ async function cargarCiudades(inputId, listId) {
   });
 }
 
-// activar para origen y destino
 cargarCiudades('origen', 'origenList');
 cargarCiudades('destino', 'destinoList');
 
-  </script>
+</script>
 </body>
 </html>
