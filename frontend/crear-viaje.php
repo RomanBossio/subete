@@ -1,4 +1,10 @@
 <?php $page='crear'; ?>
+<?php
+// 🔒 Esto SIEMPRE va primero
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
+header('Expires: 0');
+?>
 <!doctype html>
 <html lang="es">
 <head>
@@ -43,6 +49,7 @@
     </div>
   </main>
 
+
 <script>
 const f = document.getElementById('form-viaje');
 const msg = document.getElementById('msg');
@@ -82,6 +89,7 @@ f.addEventListener('submit', async (e) => {
       f.reset();
     } else {
       msg.textContent = out.error || 'Error al publicar';
+
     }
   } catch (err) {
     console.error(err);
