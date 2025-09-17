@@ -26,8 +26,8 @@ header('Expires: 0');
           Súbete te conecta con conductores y pasajeros para compartir rutas y costos. Todo simple, claro y comunitario.
         </p>
         <div class="actions">
-          <a class="btn primary" href="/subete/frontend/buscar.php">🔎 Buscar viaje</a>
-          <a class="btn" href="/subete/frontend/crear-viaje.php">➕ Publicar viaje</a>
+          <a class="btn primary" href="/subete/frontend/buscar.php"> Buscar viaje</a>
+          <a class="btn" href="/subete/frontend/crear-viaje.php"> Publicar viaje</a>
         </div>
         <div class="stats">
           <div class="stat"><small>Usuarios</small> <span id="usersTotal">—</span></div>
@@ -47,29 +47,44 @@ header('Expires: 0');
       </div>
     </section>
 
-    <!-- Quiénes somos (texto estático, podés editarlo) -->
-    <section class="section">
-      <h2 class="section-title">Quiénes somos</h2>
-      <div class="cards cols-3">
-        <article class="card">
-          <h3>Hecho en Córdoba</h3>
-          <p class="muted">Proyecto estudiantil/desarrolladores locales, pensado para rutas reales y necesidades reales.</p>
-        </article>
-        <article class="card">
-          <h3>Propósito</h3>
-          <p class="muted">Bajar costos de viaje y sumar opciones, conectando gente que comparte trayectos.</p>
-        </article>
-        <article class="card">
-          <h3>Confianza</h3>
-          <p class="muted">Perfiles, reputación y reportes. Queremos una comunidad segura y transparente.</p>
-        </article>
-      </div>
-    </section>
-
-    <footer class="site-footer">
-      © <?= date('Y') ?> Súbete — Hecho con ♥ en Córdoba.
-    </footer>
   </main>
+
+  <!-- FOOTER -->
+<footer class="site-footer">
+  <div class="footer-grid">
+    <!-- Columna 1 -->
+    <div class="footer-col">
+      <h2 class="brand">Súbete</h2>
+      <p class="tagline">Tu compañero de viaje para compartir rutas y ahorrar juntos.</p>
+    </div>
+
+    <!-- Columna 2 -->
+    <div class="footer-col">
+      <h3>Enlaces</h3>
+      <ul class="footer-links">
+        <li><a href="home.php">Inicio</a></li>
+        <li><a href="publicar.php">Publicar viaje</a></li>
+        <li><a href="viajes.php">Viajes</a></li>
+      </ul>
+    </div>
+
+    <!-- Columna 3 -->
+    <div class="footer-col">
+      <h3>Soporte</h3>
+      <ul class="footer-links">
+        <li><a href="#">Ayuda</a></li>
+        <li><a href="#">Contacto</a></li>
+        <li><a href="#">Términos</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Copyright -->
+  <div class="footer-bottom">
+    © <?= date('Y') ?> Súbete. Todos los derechos reservados.
+  </div>
+</footer>
+
 
   <script>
   // Endpoints reales (ajustá si tus rutas difieren)
@@ -95,7 +110,6 @@ header('Expires: 0');
         fetchJSON(ENDPOINTS.nuevosSemana),
         fetchJSON(ENDPOINTS.viajesConfirmados)
       ]);
-      // Soporte a { total: N } o { count: N }
       document.getElementById('usersTotal').textContent         = (u.total ?? u.count ?? '0');
       document.getElementById('viajesPublicados').textContent   = (vpub.total ?? vpub.count ?? '0');
       document.getElementById('nuevosSemana').textContent       = (nsem.total ?? nsem.count ?? '0');
@@ -110,22 +124,21 @@ header('Expires: 0');
     const cond  = v.Conductor_Nombre ? ` · ${v.Conductor_Nombre} ${v.Conductor_Apellido}` : '';
     const precio = (Number(v.Precio)||0).toLocaleString('es-AR');
     return `
-      <article class="card">
-        <h3>${v.Origen} → ${v.Destino}</h3>
-        <p class="meta">Sale: ${v.Fecha_Hora_Salida}${cond}${encom}</p>
-        <p class="meta">Asientos: ${v.Lugares_Disponibles} · Precio: $${precio}</p>
-        ${v.Detalles ? `<p class="meta">Detalles: ${v.Detalles}</p>` : ''}
-        <div class="row" style="margin-top:6px;">
-          <a class="btn" href="/subete/frontend/detalle-viaje.html?id=${v.ID_Viaje}">Ver detalle</a>
-        </div>
-      </article>
-    `;
+  <a href="/subete/frontend/detalle-viaje.html?id=${v.ID_Viaje}" class="card-link">
+    <article class="card">
+      <h3>${v.Origen} → ${v.Destino}</h3>
+      <p class="meta">Sale: ${v.Fecha_Hora_Salida}${cond}${encom}</p>
+      <p class="meta">Asientos: ${v.Lugares_Disponibles} · Precio: $${precio}</p>
+      ${v.Detalles ? `<p class="meta">Detalles: ${v.Detalles}</p>` : ''}
+    </article>
+  </a>
+`;
+
   }
 
   async function loadLastTrips(){
     const wrap = document.getElementById('lastTrips');
     try{
-      // Si tu API ya ordena por fecha de salida, esto alcanza; si no, después agregamos ?sort=desc
       const data = await fetchJSON(`${ENDPOINTS.buscar}?limit=4&offset=0`);
       const items = Array.isArray(data) ? data : (data.results || data.data || []);
       if(!items.length){
@@ -139,7 +152,6 @@ header('Expires: 0');
     }
   }
 
-  // Cargar todo
   loadStats();
   loadLastTrips();
   </script>

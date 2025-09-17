@@ -1,7 +1,12 @@
 <header class="app-header"> 
   <div class="brand">Súbete</div>
-  <nav class="nav" id="nav-links">
-    <!-- Links agregados dinámicamente -->
+  <nav class="nav">
+    <div class="nav-left" id="nav-left">
+      <!-- Links agregados dinámicamente -->
+    </div>
+    <div class="nav-right" id="nav-right">
+      <!-- Usuario y salir -->
+    </div>
   </nav>
 </header>
 
@@ -17,13 +22,14 @@
     try { return JSON.parse(json); } catch { return null; }
   }
 
-  const nav = document.getElementById("nav-links");
-  const usuario = safeParse(localStorage.getItem("usuario")) || null;
+  const navLeft = document.getElementById("nav-left");
+  const navRight = document.getElementById("nav-right");
+  const usuario = safeParse(localStorage.getItem("usuario"));
   const currentPath = window.location.pathname;
 
-  // Páginas públicas (ajustá nombres si tu registro es register.php, etc.)
-  const esLogin     = currentPath.endsWith("/login.php");
-  const esRegistro  = currentPath.endsWith("/registrar.php") || currentPath.endsWith("/register.php");
+  // Páginas públicas
+  const esLogin    = currentPath.endsWith("/login.php");
+  const esRegistro = currentPath.endsWith("/registrar.php") || currentPath.endsWith("/register.php");
 
   // ======== Guard de acceso ========
   if (!usuario && !esLogin && !esRegistro) {
@@ -35,7 +41,7 @@
     const homePath = rol === "admin" ? HOME_ADMIN : HOME_USER;
 
     // Links comunes
-    nav.innerHTML += `
+    navLeft.innerHTML += `
       <a href="${homePath}">Inicio</a>
       <a href="${BASE}buscar.php">Buscar viajes</a>
       <a href="${BASE}crear-viaje.php">Publicar</a>
@@ -43,17 +49,17 @@
 
     // Si es usuario común
     if (rol === "usuario" || rol === "user") {
-      nav.innerHTML += `<a href="${BASE}mis-reservas.php">Mis viajes</a>`;
+      navLeft.innerHTML += `<a href="${BASE}mis-reservas.php">Mis viajes</a>`;
     }
 
     // Si es admin
     if (rol === "admin") {
-      nav.innerHTML += `<a href="${BASE}panel.php">Panel de control</a>`;
+      navLeft.innerHTML += `<a href="${BASE}panel.php">Panel de control</a>`;
     }
 
-    // Nombre y botón salir
-    nav.innerHTML += `
-      <span style="margin-left:10px">👋 ${nombre}</span>
+    // Usuario + salir
+    navRight.innerHTML = `
+      <span>👋 ${nombre}</span>
       <a href="#" id="btn-salir">Salir</a>
     `;
   }
@@ -65,7 +71,6 @@
       localStorage.removeItem("rol");
       sessionStorage.clear();
     } catch {}
-    // replace para que no quede en el historial
     location.replace(LOGIN);
   }
 
