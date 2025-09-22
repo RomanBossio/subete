@@ -139,7 +139,7 @@ function renderResults(items){
         <p class="meta">Asientos: ${v.Lugares_Disponibles} · Precio: $${precio}</p>
         ${v.Detalles?`<p class="meta">Detalles: ${v.Detalles}</p>`:''}
         <div class="row" style="margin-top:6px;">
-          <a class="btn" href="/subete/frontend/detalle-viaje.html?id=${v.ID_Viaje}">Ver detalle</a>
+          <a class="btn" href="/subete/frontend/detalle-viaje.php?id=${v.ID_Viaje}">Ver detalle</a>
           <button class="btn">Reservar</button>
         </div>
       </article>

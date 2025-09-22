@@ -353,4 +353,157 @@ pre#out{ background:#f6f8fb; border:1px solid var(--stroke); border-radius:10px;
   color: var(--primary); /* opcional, para resaltar */
   margin-top: 6px;
 }
+.detalle-container {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.viaje-card {
+  background: #fff;
+  border: 1px solid #e0e4e8;
+  border-radius: 14px;
+  padding: 25px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  margin-top: 20px;
+}
+
+.viaje-header {
+  border-bottom: 1px solid #eee;
+  padding-bottom: 12px;
+  margin-bottom: 15px;
+}
+
+.viaje-header h2 {
+  margin: 0;
+  font-size: 1.6rem;
+  color: var(--primary, #2c3e50);
+}
+
+.sub-info {
+  margin: 5px 0;
+  color: #666;
+}
+
+.estado {
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  background: #eaf5ea;
+  color: #2e7d32;
+}
+
+.viaje-detalles p {
+  margin: 8px 0;
+  font-size: 1rem;
+}
+
+.extra {
+  margin-top: 12px;
+  font-style: italic;
+  color: #444;
+}
+
+.conductor-card {
+  background: #f9fafc;
+  border-radius: 12px;
+  padding: 15px;
+  margin-top: 20px;
+  border: 1px solid #e3e6eb;
+}
+
+.conductor-card h3 {
+  margin-top: 0;
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.btn-group {
+  margin-top: 25px;
+  display: flex;
+  gap: 15px;
+}
+
+.btn.reservar {
+  background: #2e7d32;
+  color: white;
+  border: none;
+}
+
+.btn.reservar:hover {
+  background: #256628;
+}
+
+.btn.volver {
+  background: #ccc;
+  color: #333;
+  border: none;
+}
+
+.btn.volver:hover {
+  background: #bbb;
+}
+body {
+  font-family: Arial, sans-serif;
+  background: #f9f9f9;
+  color: #333;
+}
+
+.container {
+  max-width: 700px;
+  margin: 30px auto;
+  padding: 0 15px;
+}
+
+.btn {
+  display: inline-block;
+  padding: 10px 18px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: bold;
+  transition: 0.2s;
+}
+
+.btn.back-btn {
+  background: #ccc;
+  color: #000;
+  margin-bottom: 20px;
+}
+
+.btn.back-btn:hover {
+  background: #bbb;
+}
+
+.btn.primary {
+  background: #28a745;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}
+
+.btn.primary:hover {
+  background: #218838;
+}
+
+.detalle-card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+  margin-top: 15px;
+}
+
+.conductor-card {
+  background: #f6f8fb;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.muted {
+  color: #777;
+}
+
+.mt-2 { margin-top: 10px; }
+.mt-3 { margin-top: 20px; }
 
