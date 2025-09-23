@@ -7,17 +7,27 @@
   <title>Detalle de viaje</title>
   <link rel="stylesheet" href="/subete/frontend/css/app.css?v=1.0">
   <link rel="stylesheet" href="/subete/frontend/css/detalle-viaje.css?v=1.0">
+  <style>
+    #map {
+      height: 400px;
+      width: 100%;
+      margin-top: 20px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+  </style>
 </head>
 <body>
-  <?php require __DIR__ . '/partials/header.php'; ?>
+<?php require __DIR__ . '/partials/header.php'; ?>
 
-  <main class="container detalle-container">
-    <a href="/subete/frontend/buscar.php" class="btn volver">← Volver</a>
-    <h1>Detalle de viaje</h1>
+<main class="container detalle-container">
+  <a href="/subete/frontend/buscar.php" class="btn volver">← Volver</a>
+  <h1>Detalle de viaje</h1>
 
-    <div id="view" class="viaje-card"></div>
-    <div id="msg" class="mt-2"></div>
-  </main>
+  <div id="view" class="viaje-card"></div>
+  <div id="msg" class="mt-2"></div>
+  <div id="map"></div>
+</main>
 
 <script>
 const API_URL = '/subete/backend/api/viajes/detalle.php';
@@ -26,27 +36,79 @@ const params = new URLSearchParams(location.search);
 const id = Number(params.get('id') || 0);
 const view  = document.getElementById('view');
 const msg   = document.getElementById('msg');
-const token = localStorage.getItem('token'); // token guardado al hacer login
+const token = localStorage.getItem('token');
 
-if (!id){
-  view.textContent = 'Falta id';
-  throw new Error('Falta id');
-}
+let viajeData = null;
+let map, directionsService, directionsRenderer;
 
-if (!token) {
-  // Mostrar aviso, pero dejar igual la página (el botón quedará deshabilitado luego)
-  msg.textContent = 'Debes iniciar sesión para reservar';
-  msg.className = 'alert error mt-2';
-}
-
-// función util para mostrar mensajes
 function showMsg(text, type='info') {
   msg.textContent = text;
   msg.className = type === 'success' ? 'alert success mt-2' : (type === 'error' ? 'alert error mt-2' : 'mt-2');
 }
 
-// Ejecutable principal
+// Inicializar mapa después de cargar datos
+function initMap() {
+  if (!viajeData) return;
+
+  directionsService = new google.maps.DirectionsService();
+  directionsRenderer = new google.maps.DirectionsRenderer();
+  map = new google.maps.Map(document.getElementById("map"), {
+    zoom: 7,
+    center: { lat: -34.6037, lng: -58.3816 } // Buenos Aires por defecto
+  });
+  directionsRenderer.setMap(map);
+
+  // Markers
+  const geocoder = new google.maps.Geocoder();
+
+  geocoder.geocode({ address: viajeData.Origen }, (results, status) => {
+    if (status === "OK") {
+      const origenMarker = new google.maps.Marker({
+        map: map,
+        position: results[0].geometry.location,
+        label: "O"
+      });
+    }
+  });
+
+  geocoder.geocode({ address: viajeData.Destino }, (results, status) => {
+    if (status === "OK") {
+      const destinoMarker = new google.maps.Marker({
+        map: map,
+        position: results[0].geometry.location,
+        label: "D"
+      });
+    }
+  });
+
+  directionsService.route({
+    origin: viajeData.Origen,
+    destination: viajeData.Destino,
+    travelMode: google.maps.TravelMode.DRIVING
+  }, (result, status) => {
+    if (status === "OK") {
+      directionsRenderer.setDirections(result);
+
+      // Ajustar zoom para mostrar toda la ruta
+      const bounds = new google.maps.LatLngBounds();
+      const route = result.routes[0].overview_path;
+      route.forEach(point => bounds.extend(point));
+      map.fitBounds(bounds);
+    } else {
+      console.error("Error al cargar la ruta:", status);
+      alert("No se pudo cargar la ruta en el mapa.");
+    }
+  });
+}
+
+
+// Fetch de datos del viaje
 (async () => {
+  if (!id) {
+    view.textContent = 'Falta id';
+    return;
+  }
+
   try {
     const res = await fetch(`${API_URL}?id=${id}`);
     const data = await res.json();
@@ -57,6 +119,9 @@ function showMsg(text, type='info') {
     }
 
     const v = data.viaje;
+    viajeData = v;
+
+    // Mostrar detalles del viaje
     const encom = Number(v.Permite_Encomiendas) === 1 ? '✔ Acepta encomiendas' : 'No acepta encomiendas';
     const precio = (Number(v.Precio) || 0).toLocaleString('es-AR');
     let disponibles = Number(v.Lugares_Disponibles) || 0;
@@ -72,7 +137,7 @@ function showMsg(text, type='info') {
         <p><strong>Asientos disponibles:</strong> <span id="lugares-disponibles">${disponibles}</span></p>
         <p><strong>Precio:</strong> $${precio}</p>
         <p><strong>Encomiendas:</strong> ${encom}</p>
-        ${v.Detalles ? `<p class="extra">${v.Detalles}</p>` : ''}
+        ${v.Detalles ? `<p class="extra">${v.Detalles}</p>` : '' }
       </div>
 
       <div class="conductor-card">
@@ -90,19 +155,10 @@ function showMsg(text, type='info') {
       </div>
     `;
 
-    // Referencias DOM dinámicas
     const btn = document.getElementById('btn-reservar');
     const inputCantidad = document.getElementById('cantidad');
     const lugaresSpan = document.getElementById('lugares-disponibles');
 
-    // Si no hay asientos, indicarlo y deshabilitar
-    if (disponibles <= 0) {
-      showMsg('No quedan asientos disponibles', 'error');
-      btn.disabled = true;
-      inputCantidad.disabled = true;
-    }
-
-    // Función para actualizar UI cuando cambian los asientos
     function actualizarDisponibles(nuevo) {
       disponibles = Number(nuevo) || 0;
       lugaresSpan.textContent = disponibles;
@@ -113,101 +169,56 @@ function showMsg(text, type='info') {
         inputCantidad.disabled = true;
       } else {
         inputCantidad.disabled = false;
-        // si el valor actual excede el max, reducirlo
         if (Number(inputCantidad.value) > disponibles) inputCantidad.value = disponibles;
       }
     }
 
-    // Handler botón reservar
     btn.addEventListener('click', async () => {
-      const tokenLocal = localStorage.getItem('token'); // recargar token por si cambió
+      const tokenLocal = localStorage.getItem('token');
       if (!tokenLocal) {
         showMsg('Debes iniciar sesión para reservar', 'error');
         return;
       }
 
-      // Leer cantidad
       const cantidad = Math.max(1, Math.floor(Number(inputCantidad.value) || 1));
-      if (cantidad < 1) {
-        showMsg('La cantidad debe ser al menos 1', 'error');
-        return;
-      }
-      if (cantidad > disponibles) {
-        showMsg('No hay suficientes asientos disponibles', 'error');
-        return;
-      }
+      if (cantidad < 1) { showMsg('La cantidad debe ser al menos 1', 'error'); return; }
+      if (cantidad > disponibles) { showMsg('No hay suficientes asientos disponibles', 'error'); return; }
 
       try {
-        // Petición al backend
         const resReserva = await fetch(API_RESERVA, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + tokenLocal
-          },
+          headers: { 'Content-Type':'application/json','Authorization':'Bearer ' + tokenLocal },
           body: JSON.stringify({ id_viaje: id, cantidad: cantidad })
         });
+        const dataReserva = await resReserva.json();
 
-        // leemos texto crudo para debug y luego intentar JSON
-        const text = await resReserva.text();
-        console.log('Respuesta cruda de reservas.php:', text);
-
-        // Intentamos parsear JSON
-        let dataReserva;
-        try {
-          dataReserva = JSON.parse(text);
-        } catch (err) {
-          // Si viene HTML o warning de PHP lo mostramos para que lo puedas ver
-          showMsg('Respuesta inválida del servidor: ' + text, 'error');
-          console.error('Error parseando JSON de reservas.php', err);
-          return;
-        }
-
-        // Si el servidor devolvió ok
         if (dataReserva.ok) {
-          showMsg(dataReserva.msg || 'Reserva realizada con éxito', 'success');
-
-          // Si el backend devuelve el nuevo contador de lugares lo usamos,
-          // si no, lo actualizamos localmente restando la cantidad
-          const nuevos = Number(
-            dataReserva.lugares_restantes ?? dataReserva.lugaresRestantes ?? dataReserva.restantes ?? dataReserva.lugares_restantes_php ?? NaN
-          );
-
-          if (!Number.isNaN(nuevos)) {
-            actualizarDisponibles(nuevos);
-          } else {
-            // fallback: restar localmente
-            actualizarDisponibles(Math.max(0, disponibles - cantidad));
-          }
-
-          // opcional: deshabilitar botón si ya no quedan asientos
-          if (disponibles <= 0) {
-            btn.disabled = true;
-            inputCantidad.disabled = true;
-          }
-
+          showMsg(dataReserva.msg || 'Reserva realizada con éxito','success');
+          const nuevos = Number(dataReserva.lugares_restantes ?? dataReserva.lugaresRestantes ?? disponibles - cantidad);
+          actualizarDisponibles(nuevos);
         } else {
-          // error retornado por el backend (ej. token inválido, ya reservó, no hay plazas)
-          const errMsg = dataReserva.error || 'Error al reservar';
-          showMsg(errMsg, 'error');
-
-          // Si backend indica token expirado o inválido, sugerimos re-login
-          if (/token/i.test(errMsg) || /expir/i.test(errMsg) || resReserva.status === 401) {
-            showMsg(errMsg + '. Volvé a iniciar sesión.', 'error');
-          }
+          showMsg(dataReserva.error || 'Error al reservar','error');
         }
 
-      } catch (e) {
-        console.error('Excepción al reservar:', e);
-        showMsg('Error al reservar (problema de conexión)', 'error');
-      }
+      } catch(e) { showMsg('Error al reservar (problema de conexión)','error'); }
     });
+
+    // Una vez que tenemos los datos, inicializamos el mapa
+    initMap();
 
   } catch (e) {
     console.error(e);
     view.textContent = 'No se pudo cargar el detalle.';
   }
 })();
+
+// Cargar Google Maps de forma clásica
+const gmapsScript = document.createElement('script');
+gmapsScript.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyDOsUtRsZPG_LIRJtxULIBfPmG2XrCnJ4M";
+gmapsScript.async = true;
+gmapsScript.defer = true;
+document.head.appendChild(gmapsScript);
+
 </script>
 </body>
 </html>

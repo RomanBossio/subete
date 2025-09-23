@@ -124,7 +124,7 @@ header('Expires: 0');
     const cond  = v.Conductor_Nombre ? ` · ${v.Conductor_Nombre} ${v.Conductor_Apellido}` : '';
     const precio = (Number(v.Precio)||0).toLocaleString('es-AR');
     return `
-  <a href="/subete/frontend/detalle-viaje.html?id=${v.ID_Viaje}" class="card-link">
+  <a href="/subete/frontend/detalle-viaje.php?id=${v.ID_Viaje}" class="card-link">
     <article class="card">
       <h3>${v.Origen} → ${v.Destino}</h3>
       <p class="meta">Sale: ${v.Fecha_Hora_Salida}${cond}${encom}</p>
