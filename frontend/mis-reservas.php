@@ -16,7 +16,10 @@
     <div id="reservas-list" class="results mt-3"></div>
 
     <h2 class="section-title mt-4">Viajes que publicaste</h2>
-    <div id="viajes-publicados" class="results mt-2"></div>
+    <div id="viajes-futuros" class="results mt-2"></div>
+
+    <h3 class="section-title mt-4">Historial de viajes</h3>
+    <div id="viajes-pasados" class="results mt-2"></div>
   </main>
 
 <script>
@@ -27,7 +30,8 @@ const API_PASAJEROS = '/subete/backend/api/viajes/pasajeros-por-viaje.php';
 const API_ELIMINAR_PASAJERO = '/subete/backend/api/viajes/eliminar-pasajero.php';
 
 const reservasList = document.getElementById('reservas-list');
-const viajesPublicadosList = document.getElementById('viajes-publicados');
+const viajesFuturos = document.getElementById('viajes-futuros');
+const viajesPasados = document.getElementById('viajes-pasados');
 const msg = document.getElementById('msg');
 const token = localStorage.getItem('token');
 
@@ -113,18 +117,22 @@ if (!token) {
       const data = await res.json();
 
       if (!data.ok) {
-        viajesPublicadosList.innerHTML = '<p class="muted">Error al cargar tus viajes publicados.</p>';
+        viajesFuturos.innerHTML = '<p class="muted">Error al cargar tus viajes publicados.</p>';
         return;
       }
 
       if (!data.viajes || data.viajes.length === 0) {
-        viajesPublicadosList.innerHTML = '<p class="muted">No publicaste viajes aún.</p>';
+        viajesFuturos.innerHTML = '<p class="muted">No publicaste viajes aún.</p>';
         return;
       }
 
-      viajesPublicadosList.innerHTML = '';
+      viajesFuturos.innerHTML = '';
+      viajesPasados.innerHTML = '';
+
+      const ahora = new Date();
 
       for (const viaje of data.viajes) {
+        const fechaViaje = new Date(viaje.Fecha_Hora_Salida);
         const card = document.createElement('div');
         card.className = 'card';
         card.innerHTML = `
@@ -133,7 +141,12 @@ if (!token) {
           <p>Lugares disponibles: <strong>${viaje.Lugares_Disponibles}</strong></p>
           <p><strong>Pasajeros:</strong> <span class="pasajeros-loading">Cargando...</span></p>
         `;
-        viajesPublicadosList.appendChild(card);
+
+        if (fechaViaje > ahora) {
+          viajesFuturos.appendChild(card);
+        } else {
+          viajesPasados.appendChild(card);
+        }
 
         try {
           const pasajerosRes = await fetch(API_PASAJEROS, {
@@ -159,7 +172,7 @@ if (!token) {
                 <strong>${p.Nombre} ${p.Apellido}</strong><br>
                 <span class="muted">Tel:</span> <a href="tel:${p.Telefono}">${p.Telefono}</a><br>
                 <span class="muted">Asientos:</span> ${p.cantidad}<br>
-                <button class="btn eliminar-pasajero" data-id="${p.id_reserva}">Eliminar</button>
+                ${fechaViaje > ahora ? `<button class="btn eliminar-pasajero" data-id="${p.id_reserva}">Eliminar</button>` : ''}
               </li>`
             ).join('') + '</ul>';
           }
@@ -170,17 +183,15 @@ if (!token) {
           console.error('Error al cargar pasajeros:', err);
         }
       }
-
     } catch (err) {
       console.error('Error al cargar viajes publicados:', err);
-      viajesPublicadosList.innerHTML = '<p class="muted">Error al cargar tus viajes publicados.</p>';
+      viajesFuturos.innerHTML = '<p class="muted">Error al cargar tus viajes publicados.</p>';
     }
   }
 
-  viajesPublicadosList.addEventListener('click', async (e) => {
+  document.addEventListener('click', async (e) => {
     if (e.target.classList.contains('eliminar-pasajero')) {
       const id_reserva = e.target.dataset.id;
-
       if (!confirm('¿Eliminar este pasajero?')) return;
 
       try {
