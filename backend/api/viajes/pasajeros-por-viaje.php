@@ -47,10 +47,9 @@ if (!$viaje) {
     exit;
 }
 
-// 🔧 Obtener pasajeros con ID_Reserva incluido
-// Obtener pasajeros
+// 🔧 Obtener pasajeros incluyendo el ID_Reserva (necesario para poder eliminar)
 $stmt = $pdo->prepare("
-  SELECT r.ID_Reserva, u.ID_Usuario, u.Nombre, u.Apellido, u.Telefono, r.cantidad
+  SELECT r.ID_Reserva AS id_reserva, u.ID_Usuario, u.Nombre, u.Apellido, u.Telefono, r.cantidad
   FROM reservas r
   JOIN usuarios u ON r.ID_Usuario = u.ID_Usuario
   WHERE r.ID_Viaje = ? AND r.Estado = 'pendiente'
@@ -60,4 +59,3 @@ $pasajeros = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 echo json_encode(['ok'=>true, 'pasajeros'=>$pasajeros]);
 exit;
-
