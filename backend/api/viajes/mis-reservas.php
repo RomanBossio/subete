@@ -29,10 +29,18 @@ if (!$id_usuario) {
     exit;
 }
 
-// Traer reservas del usuario
+// Traer reservas del usuario (incluyendo precio del viaje)
 $stmt = $pdo->prepare("
-    SELECT r.id_reserva, r.id_viaje, r.fecha_reserva, r.estado, r.cantidad,
-           v.Origen, v.Destino, v.Fecha_Hora_Salida
+    SELECT 
+        r.id_reserva,
+        r.id_viaje,
+        r.fecha_reserva,
+        r.estado,
+        r.cantidad,
+        v.Origen,
+        v.Destino,
+        v.Fecha_Hora_Salida,
+        v.Precio           AS Precio  -- 👈 agregado para mostrar precio
     FROM reservas r
     JOIN viajes v ON r.id_viaje = v.ID_Viaje
     WHERE r.id_usuario = ?
