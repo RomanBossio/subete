@@ -15,6 +15,16 @@
       border-radius: 8px;
       border: 1px solid #ccc;
     }
+    #infoRuta {
+      margin-top: 15px;
+      background: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 10px 12px;
+      font-size: 15px;
+      color: #333;
+      line-height: 1.5;
+    }
   </style>
 </head>
 <body>
@@ -25,6 +35,7 @@
   <h1>Detalle de viaje</h1>
 
   <div id="view" class="viaje-card"></div>
+  <div id="infoRuta"></div> <!-- aquí mostramos duración/distancia -->
   <div id="msg" class="mt-2"></div>
   <div id="map"></div>
 </main>
@@ -36,6 +47,7 @@ const params = new URLSearchParams(location.search);
 const id = Number(params.get('id') || 0);
 const view  = document.getElementById('view');
 const msg   = document.getElementById('msg');
+const infoRuta = document.getElementById('infoRuta');
 const token = localStorage.getItem('token');
 
 let viajeData = null;
@@ -46,7 +58,7 @@ function showMsg(text, type='info') {
   msg.className = type === 'success' ? 'alert success mt-2' : (type === 'error' ? 'alert error mt-2' : 'mt-2');
 }
 
-// Inicializar mapa después de cargar datos
+// Inicializar mapa y mostrar duración/distancia
 function initMap() {
   if (!viajeData) return;
 
@@ -58,12 +70,12 @@ function initMap() {
   });
   directionsRenderer.setMap(map);
 
-  // Markers
+  // Geocodificar y colocar marcadores
   const geocoder = new google.maps.Geocoder();
 
   geocoder.geocode({ address: viajeData.Origen }, (results, status) => {
     if (status === "OK") {
-      const origenMarker = new google.maps.Marker({
+      new google.maps.Marker({
         map: map,
         position: results[0].geometry.location,
         label: "O"
@@ -73,7 +85,7 @@ function initMap() {
 
   geocoder.geocode({ address: viajeData.Destino }, (results, status) => {
     if (status === "OK") {
-      const destinoMarker = new google.maps.Marker({
+      new google.maps.Marker({
         map: map,
         position: results[0].geometry.location,
         label: "D"
@@ -81,6 +93,7 @@ function initMap() {
     }
   });
 
+  // Solicitar ruta y mostrar datos
   directionsService.route({
     origin: viajeData.Origen,
     destination: viajeData.Destino,
@@ -88,6 +101,17 @@ function initMap() {
   }, (result, status) => {
     if (status === "OK") {
       directionsRenderer.setDirections(result);
+
+      // Extraer distancia y duración
+      const leg = result.routes[0].legs[0];
+      const distancia = leg.distance.text;
+      const duracion = leg.duration.text;
+
+      // Mostrar en pantalla
+      infoRuta.innerHTML = `
+        <p><strong>Duración aproximada:</strong> ${duracion}</p>
+        <p><strong>Distancia:</strong> ${distancia}</p>
+      `;
 
       // Ajustar zoom para mostrar toda la ruta
       const bounds = new google.maps.LatLngBounds();
@@ -101,8 +125,7 @@ function initMap() {
   });
 }
 
-
-// Fetch de datos del viaje
+// Cargar datos del viaje
 (async () => {
   if (!id) {
     view.textContent = 'Falta id';
@@ -203,7 +226,7 @@ function initMap() {
       } catch(e) { showMsg('Error al reservar (problema de conexión)','error'); }
     });
 
-    // Una vez que tenemos los datos, inicializamos el mapa
+    // Inicializar mapa después de cargar datos
     initMap();
 
   } catch (e) {
@@ -212,7 +235,7 @@ function initMap() {
   }
 })();
 
-// Cargar Google Maps de forma clásica
+// Cargar Google Maps
 const gmapsScript = document.createElement('script');
 gmapsScript.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyDOsUtRsZPG_LIRJtxULIBfPmG2XrCnJ4M";
 gmapsScript.async = true;

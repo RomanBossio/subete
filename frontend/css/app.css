@@ -507,3 +507,8 @@ body {
 .mt-2 { margin-top: 10px; }
 .mt-3 { margin-top: 20px; }
 
+#msg p.muted {
+  font-size: 14px;
+  color: #555;
+  margin-top: 10px;
+}

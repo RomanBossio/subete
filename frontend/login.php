@@ -6,6 +6,52 @@
   <title>Login - Súbete</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link rel="stylesheet" href="/subete/frontend/css/app.css?v=1.0">
+  <style>
+    .loader-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(255,255,255,0.95);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+
+    .loader-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .loader {
+      width: 70px;
+      height: 70px;
+      border: 6px solid #ddd;
+      border-top-color: var(--primary, #1e88e5);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loader-text {
+      margin-top: 15px;
+      font-size: 18px;
+      color: #333;
+      font-weight: 500;
+      transition: opacity 0.4s ease;
+    }
+
+    .fade-out {
+      opacity: 0 !important;
+      transition: opacity 0.8s ease;
+    }
+  </style>
 </head>
 <body>
   <?php require __DIR__ . '/partials/header.php'; ?>
@@ -38,9 +84,17 @@
     </div>
   </main>
 
+  <!-- Loader -->
+  <div class="loader-overlay" id="loader">
+    <div class="loader"></div>
+    <div class="loader-text" id="loader-text">0%</div>
+  </div>
+
 <script>
 const loginForm = document.getElementById('loginForm');
 const alertDiv = document.getElementById('alert');
+const loader = document.getElementById('loader');
+const loaderText = document.getElementById('loader-text');
 
 loginForm.addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -48,6 +102,15 @@ loginForm.addEventListener('submit', async (e) => {
 
   const email = document.getElementById('email').value.trim();
   const password = document.getElementById('password').value.trim();
+
+  // Mostrar loader
+  loader.classList.add('active');
+  let progress = 0;
+  const interval = setInterval(() => {
+    progress += Math.floor(Math.random() * 10) + 5;
+    if (progress >= 95) progress = 95;
+    loaderText.textContent = `${progress}%`;
+  }, 200);
 
   try {
     const res = await fetch('../backend/api/auth/login.php', {
@@ -59,17 +122,38 @@ loginForm.addEventListener('submit', async (e) => {
     const out = await res.json();
 
     if (res.ok && !out.error) {
-      // Guardar token y datos del usuario en localStorage
       if (out.token) {
         localStorage.setItem('token', out.token);
         localStorage.setItem('usuario', JSON.stringify(out.usuario));
       }
-      window.location.href = '/subete/frontend/home.php';
+
+      clearInterval(interval);
+      loaderText.textContent = '100%';
+
+      // Mostrar "Hola [Nombre del usuario]"
+      setTimeout(() => {
+        const nombre = out.usuario.nombre || 'Usuario';
+        loaderText.textContent = `Hola ${nombre}`;
+      }, 400);
+
+      // Fade-out y redirección
+      setTimeout(() => {
+        loader.classList.add('fade-out');
+      }, 1000);
+
+      setTimeout(() => {
+        window.location.href = '/subete/frontend/home.php';
+      }, 1700);
+
     } else {
+      clearInterval(interval);
+      loader.classList.remove('active');
       alertDiv.textContent = out.error || 'Error al iniciar sesión';
     }
 
   } catch (err) {
+    clearInterval(interval);
+    loader.classList.remove('active');
     console.error(err);
     alertDiv.textContent = 'Error de conexión';
   }
