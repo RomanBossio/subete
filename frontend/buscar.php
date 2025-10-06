@@ -140,7 +140,6 @@ function renderResults(items){
         ${v.Detalles?`<p class="meta">Detalles: ${v.Detalles}</p>`:''}
         <div class="row" style="margin-top:6px;">
           <a class="btn" href="/subete/frontend/detalle-viaje.php?id=${v.ID_Viaje}">Ver detalle</a>
-          <button class="btn">Reservar</button>
         </div>
       </article>
     `;

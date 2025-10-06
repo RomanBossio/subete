@@ -7,6 +7,114 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link rel="stylesheet" href="/subete/frontend/css/app.css?v=1.0">
   <style>
+    /* ===== Fondo con imagen difuminada ===== */
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: url('/subete/frontend/img/viaje1.png') no-repeat center center fixed;
+      background-size: cover;
+      height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Capa difuminada encima del fondo */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.55);
+      backdrop-filter: blur(6px);
+      z-index: -1;
+    }
+
+    /* Centrado del contenido */
+    main.container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    /* Tarjeta del login */
+    .card {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(8px);
+      border-radius: 16px;
+      padding: 30px 25px;
+      box-shadow: 0 6px 25px rgba(0,0,0,0.3);
+      max-width: 420px;
+      width: 90%;
+      text-align: center;
+    }
+
+    .auth-logo img {
+      max-height: 60px;
+      object-fit: contain;
+    }
+
+    .auth-title {
+      font-size: 1.6rem;
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .auth-subtitle {
+      color: #555;
+      font-size: 0.95rem;
+      margin-bottom: 15px;
+    }
+
+    .form-group {
+      text-align: left;
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 5px;
+      color: #333;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+
+    .btn.primary {
+      width: 100%;
+      background-color: #1e88e5;
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.3s;
+    }
+
+    .btn.primary:hover {
+      background-color: #1565c0;
+    }
+
+    a {
+      color: #1e88e5;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .alert {
+      color: red;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
     /* Loader */
     .loader-overlay {
       position: fixed;
@@ -51,9 +159,9 @@
   <?php require __DIR__ . '/partials/header.php'; ?>
 
   <main class="container">
-    <div class="card" style="max-width:520px;margin:auto">
+    <div class="card">
       <div class="auth-logo" style="text-align:center;margin-bottom:12px">
-        <img src="/subete/frontend/img/hero-carpool.jpg" alt="Logo" style="max-height:60px;object-fit:contain">
+        <img src="/subete/frontend/img/hero-carpool.jpg" alt="Logo">
       </div>
       <h2 class="auth-title">Iniciar Sesión</h2>
       <p class="auth-subtitle muted">Ingresa tus credenciales para continuar</p>
