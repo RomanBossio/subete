@@ -243,5 +243,7 @@ gmapsScript.defer = true;
 document.head.appendChild(gmapsScript);
 
 </script>
+<?php require __DIR__ . '/partials/footer.php'; ?>
+
 </body>
 </html>

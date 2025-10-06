@@ -11,7 +11,128 @@ header('Expires: 0');
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Publicar viaje</title>
-  <link rel="stylesheet" href="/subete/frontend/css/app.css?v=1.0">
+  <link rel="stylesheet" href="/subete/frontend/css/app.css?v=1.3">
+  <style>
+    /* ===== Estilos para el formulario ===== */
+    main.container {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 40px 20px;
+      min-height: 80vh;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 16px;
+      padding: 30px 25px;
+      width: 100%;
+      max-width: 600px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    }
+
+    h2 {
+      margin-top: 0;
+      margin-bottom: 20px;
+      color: #1e88e5;
+      text-align: center;
+    }
+
+    form label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: #333;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1rem;
+      margin-bottom: 15px;
+    }
+
+    textarea {
+      resize: vertical;
+    }
+
+    .grid.cols-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    @media(max-width: 600px){
+      .grid.cols-2 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .checkbox-group input {
+      width: auto;
+      margin-right: 10px;
+    }
+
+    .btn.primary {
+      width: 100%;
+      background-color: #1e88e5;
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.3s;
+      font-size: 1rem;
+    }
+
+    .btn.primary:hover {
+      background-color: #1565c0;
+    }
+
+    #msg {
+      margin-top: 10px;
+      text-align: center;
+      font-weight: 600;
+      color: #1e88e5;
+    }
+    /* ===== Fondo con imagen difuminada ===== */
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: url('/subete/frontend/img/mapa.png') no-repeat center center fixed;
+  background-size: cover;
+  height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Capa difuminada encima del fondo */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4); /* oscurece un poco */
+  backdrop-filter: blur(6px);      /* difumina la imagen */
+  z-index: -1;
+}
+
+/* Para que el main siga centrado sobre el fondo */
+main.container {
+  position: relative;
+  z-index: 1;
+}
+
+ 
+  </style>
 </head>
 <body>
   <?php require __DIR__ . '/partials/header.php'; ?>
@@ -35,22 +156,33 @@ header('Expires: 0');
           <label>Fecha y hora de salida
             <input type="datetime-local" name="fecha_hora_salida" required>
           </label>
+          <label>Precio
+            <input type="number" step="0.01" name="precio" required>
+          </label>
         </div>
 
         <div class="grid cols-2">
-          <label>Precio<input type="number" step="0.01" name="precio" required></label>
-          <label>Asientos<input type="number" name="lugares" min="1" max="6" required></label>
+          <label>Asientos
+            <input type="number" name="lugares" min="1" max="6" required>
+          </label>
+          <div class="checkbox-group">
+            <input type="checkbox" id="encomiendas">
+            <label for="encomiendas">Permite encomiendas</label>
+          </div>
         </div>
 
-        <label>Descripción<textarea name="descripcion" rows="3"></textarea></label>
+        <label>Descripción
+          <textarea name="detalles" rows="3" placeholder="Opcional"></textarea>
+        </label>
+
         <button class="btn primary" type="submit">Publicar</button>
       </form>
-      <div id="msg" class="muted mt-3"></div>
+      <div id="msg"></div>
     </div>
   </main>
 
-
 <script>
+// Referencias
 const f = document.getElementById('form-viaje');
 const msg = document.getElementById('msg');
 
@@ -58,15 +190,16 @@ f.addEventListener('submit', async (e) => {
   e.preventDefault();
   const formData = new FormData(f);
 
-  // Convertir datetime-local a formato que espera el backend: YYYY-MM-DD HH:MM:SS
-  const dtInput = formData.get('fecha_hora_salida'); // Ej: 2025-09-17T10:30
-  if (dtInput) {
-    formData.set('fecha_hora_salida', dtInput.replace('T', ' ') + ':00');
-  }
+  // Convertir datetime-local a formato YYYY-MM-DD HH:MM:SS
+  const dtInput = formData.get('fecha_hora_salida');
+  if (dtInput) formData.set('fecha_hora_salida', dtInput.replace('T', ' ') + ':00');
 
   const data = Object.fromEntries(formData.entries());
 
-  // Obtener token del localStorage
+  // ✔ Checkbox de encomiendas
+  data.permite_encomiendas = document.getElementById('encomiendas').checked ? 1 : 0;
+
+  // Token
   const token = localStorage.getItem("token");
   if (!token) {
     msg.textContent = "Debes iniciar sesión para publicar un viaje";
@@ -89,7 +222,6 @@ f.addEventListener('submit', async (e) => {
       f.reset();
     } else {
       msg.textContent = out.error || 'Error al publicar';
-
     }
   } catch (err) {
     console.error(err);
@@ -97,7 +229,7 @@ f.addEventListener('submit', async (e) => {
   }
 });
 
-// ------------------ Autocompletado de ciudades ------------------
+// Autocompletado de ciudades
 async function cargarCiudades(inputId, listId) {
   const input = document.getElementById(inputId);
   const list  = document.getElementById(listId);
@@ -127,5 +259,7 @@ cargarCiudades('origen', 'origenList');
 cargarCiudades('destino', 'destinoList');
 
 </script>
+
+<?php require __DIR__ . '/partials/footer.php'; ?>
 </body>
 </html>

@@ -177,5 +177,7 @@ cargarCiudades('origen','origenList');
 cargarCiudades('destino','destinoList');
 
 </script>
+<?php require __DIR__ . '/partials/footer.php'; ?>
+
 </body>
 </html>

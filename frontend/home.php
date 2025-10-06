@@ -63,8 +63,8 @@ header('Expires: 0');
       <h3>Enlaces</h3>
       <ul class="footer-links">
         <li><a href="home.php">Inicio</a></li>
-        <li><a href="publicar.php">Publicar viaje</a></li>
-        <li><a href="viajes.php">Viajes</a></li>
+        <li><a href="crear-viaje.php">Publicar viaje</a></li>
+        <li><a href="buscar.php">Viajes</a></li>
       </ul>
     </div>
 
@@ -72,9 +72,9 @@ header('Expires: 0');
     <div class="footer-col">
       <h3>Soporte</h3>
       <ul class="footer-links">
-        <li><a href="#">Ayuda</a></li>
-        <li><a href="#">Contacto</a></li>
-        <li><a href="#">Términos</a></li>
+        <li><a href="ayuda.php">Ayuda</a></li>
+        <li><a href="contacto.php">Contacto</a></li>
+        <li><a href="terminos.php">Términos</a></li>
       </ul>
     </div>
   </div>

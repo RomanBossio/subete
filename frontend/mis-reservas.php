@@ -256,5 +256,7 @@ document.addEventListener('click', async (e) => {
   }
 });
 </script>
+<?php require __DIR__ . '/partials/footer.php'; ?>
+
 </body>
 </html>
