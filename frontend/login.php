@@ -7,6 +7,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link rel="stylesheet" href="/subete/frontend/css/app.css?v=1.0">
   <style>
+    /* Loader */
     .loader-overlay {
       position: fixed;
       inset: 0;
@@ -20,12 +21,10 @@
       visibility: hidden;
       transition: opacity 0.5s ease, visibility 0.5s ease;
     }
-
     .loader-overlay.active {
       opacity: 1;
       visibility: visible;
     }
-
     .loader {
       width: 70px;
       height: 70px;
@@ -34,11 +33,7 @@
       border-radius: 50%;
       animation: spin 1s linear infinite;
     }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
+    @keyframes spin { to { transform: rotate(360deg); } }
     .loader-text {
       margin-top: 15px;
       font-size: 18px;
@@ -46,7 +41,6 @@
       font-weight: 500;
       transition: opacity 0.4s ease;
     }
-
     .fade-out {
       opacity: 0 !important;
       transition: opacity 0.8s ease;
@@ -78,6 +72,16 @@
         <button type="submit" class="btn primary">Entrar</button>
       </form>
 
+      <p class="mt-2">
+        <a href="#" id="forgot-password-link">¿Olvidaste tu contraseña?</a>
+      </p>
+
+      <div id="forgot-password-form" style="display:none; margin-top:15px;">
+        <input type="email" id="forgot-email" placeholder="Ingresa tu correo" class="input-asientos" />
+        <button id="btn-forgot" class="btn secondary">Enviar enlace</button>
+        <div id="forgot-msg" class="mt-2"></div>
+      </div>
+
       <p class="auth-subtitle mt-3">¿No tienes cuenta?
         <a href="/subete/frontend/registrar.php">Regístrate aquí</a>
       </p>
@@ -103,7 +107,6 @@ loginForm.addEventListener('submit', async (e) => {
   const email = document.getElementById('email').value.trim();
   const password = document.getElementById('password').value.trim();
 
-  // Mostrar loader
   loader.classList.add('active');
   let progress = 0;
   const interval = setInterval(() => {
@@ -118,7 +121,6 @@ loginForm.addEventListener('submit', async (e) => {
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({email, password})
     });
-
     const out = await res.json();
 
     if (res.ok && !out.error) {
@@ -130,13 +132,11 @@ loginForm.addEventListener('submit', async (e) => {
       clearInterval(interval);
       loaderText.textContent = '100%';
 
-      // Mostrar "Hola [Nombre del usuario]"
       setTimeout(() => {
         const nombre = out.usuario.nombre || 'Usuario';
         loaderText.textContent = `Hola ${nombre}`;
       }, 400);
 
-      // Fade-out y redirección
       setTimeout(() => {
         loader.classList.add('fade-out');
       }, 1000);
@@ -150,12 +150,41 @@ loginForm.addEventListener('submit', async (e) => {
       loader.classList.remove('active');
       alertDiv.textContent = out.error || 'Error al iniciar sesión';
     }
-
   } catch (err) {
     clearInterval(interval);
     loader.classList.remove('active');
     console.error(err);
     alertDiv.textContent = 'Error de conexión';
+  }
+});
+
+// ======= Olvidé contraseña =======
+const forgotLink = document.getElementById('forgot-password-link');
+const forgotForm = document.getElementById('forgot-password-form');
+const btnForgot = document.getElementById('btn-forgot');
+const forgotMsg = document.getElementById('forgot-msg');
+
+forgotLink.addEventListener('click', (e) => {
+  e.preventDefault();
+  forgotForm.style.display = forgotForm.style.display === 'none' ? 'block' : 'none';
+});
+
+btnForgot.addEventListener('click', async () => {
+  const email = document.getElementById('forgot-email').value.trim();
+  forgotMsg.textContent = '';
+  if (!email) { forgotMsg.textContent = 'Ingresa un correo válido'; return; }
+
+  try {
+    const res = await fetch('../backend/api/auth/forgot-password.php', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({email})
+    });
+    const out = await res.json();
+    forgotMsg.textContent = out.ok ? 'Revisa tu correo para restablecer la contraseña' : (out.error || 'Error al enviar enlace');
+  } catch (e) {
+    console.error(e);
+    forgotMsg.textContent = 'Error de conexión';
   }
 });
 </script>

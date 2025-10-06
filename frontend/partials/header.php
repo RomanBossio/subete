@@ -28,11 +28,12 @@
   const currentPath = window.location.pathname;
 
   // Páginas públicas
-  const esLogin    = currentPath.endsWith("/login.php");
-  const esRegistro = currentPath.endsWith("/registrar.php") || currentPath.endsWith("/register.php");
+  const esLogin        = currentPath.endsWith("/login.php");
+  const esRegistro     = currentPath.endsWith("/registrar.php") || currentPath.endsWith("/register.php");
+  const esResetPassword = currentPath.endsWith("/reset-password.php");
 
-  // ======== Guard de acceso ========
-  if (!usuario && !esLogin && !esRegistro) {
+  // ======== Guard de acceso modificado ========
+  if (!usuario && !esLogin && !esRegistro && !esResetPassword) {
     window.location.replace(LOGIN);
   } else if (usuario) {
     // Normalizo campos por si cambian de nombre
@@ -88,6 +89,6 @@
 
   window.addEventListener("popstate", () => {
     const u2 = safeParse(localStorage.getItem("usuario"));
-    if (!u2) location.replace(LOGIN);
+    if (!u2 && !esLogin && !esRegistro && !esResetPassword) location.replace(LOGIN);
   });
 </script>
