@@ -11,13 +11,11 @@
 </header>
 
 <script>
-  // ======== Config rutas ========
   const BASE = "/subete/frontend/";
   const LOGIN = BASE + "login.php";
-  const HOME_ADMIN = BASE + "home-admin.php";
+  const PANEL = BASE + "panel.php"; // 👑 Página principal del admin
   const HOME_USER  = BASE + "home.php";
 
-  // ======== Util: parse seguro ========
   function safeParse(json) {
     try { return JSON.parse(json); } catch { return null; }
   }
@@ -27,45 +25,48 @@
   const usuario = safeParse(localStorage.getItem("usuario"));
   const currentPath = window.location.pathname;
 
-  // Páginas públicas
-  const esLogin        = currentPath.endsWith("/login.php");
-  const esRegistro     = currentPath.endsWith("/registrar.php") || currentPath.endsWith("/register.php");
+  const esLogin         = currentPath.endsWith("/login.php");
+  const esRegistro      = currentPath.endsWith("/registrar.php") || currentPath.endsWith("/register.php");
   const esResetPassword = currentPath.endsWith("/reset-password.php");
 
-  // ======== Guard de acceso modificado ========
+  // ======== Protección de acceso ========
   if (!usuario && !esLogin && !esRegistro && !esResetPassword) {
     window.location.replace(LOGIN);
   } else if (usuario) {
-    // Normalizo campos por si cambian de nombre
     const rol     = (usuario.rol || usuario.Rol || "").toLowerCase();
     const nombre  = usuario.nombre || usuario.Nombre || usuario.name || "Usuario";
-    const homePath = rol === "admin" ? HOME_ADMIN : HOME_USER;
 
-    // Links comunes
-    navLeft.innerHTML += `
-      <a href="${homePath}">Inicio</a>
-      <a href="${BASE}buscar.php">Buscar viajes</a>
-      <a href="${BASE}crear-viaje.php">Publicar</a>
-    `;
-
-    // Si es usuario común
-    if (rol === "usuario" || rol === "user") {
-      navLeft.innerHTML += `<a href="${BASE}mis-reservas.php">Mis viajes</a>`;
-    }
-
-    // Si es admin
+    // 👑 Si es admin
     if (rol === "admin") {
-      navLeft.innerHTML += `<a href="${BASE}panel.php">Panel de control</a>`;
+      // Si no está en el panel, redirigirlo
+      if (!currentPath.endsWith("/panel.php")) {
+        window.location.replace(PANEL);
+      }
+
+      // Header solo con nombre y salir
+      navLeft.innerHTML = "";
+      navRight.innerHTML = `
+        <span>👑 ${nombre}</span>
+        <a href="#" id="btn-salir">Salir</a>
+      `;
     }
 
-    // Usuario + salir
-    navRight.innerHTML = `
-      <span>👋 ${nombre}</span>
-      <a href="#" id="btn-salir">Salir</a>
-    `;
+    // 👤 Si es usuario común
+    else {
+      navLeft.innerHTML = `
+        <a href="${HOME_USER}">Inicio</a>
+        <a href="${BASE}buscar.php">Buscar viajes</a>
+        <a href="${BASE}crear-viaje.php">Publicar</a>
+        <a href="${BASE}mis-reservas.php">Mis viajes</a>
+      `;
+      navRight.innerHTML = `
+        <span>👋 ${nombre}</span>
+        <a href="#" id="btn-salir">Salir</a>
+      `;
+    }
   }
 
-  // ======== Salir ========
+  // ======== Cerrar sesión ========
   function cerrarSesion() {
     try {
       localStorage.removeItem("usuario");
@@ -82,13 +83,9 @@
     }
   });
 
-  // ======== Anti-cache / botón Atrás ========
+  // ======== Anti-cache / volver atrás ========
   window.addEventListener("pageshow", (e) => {
     if (e.persisted) location.reload();
   });
-
-  window.addEventListener("popstate", () => {
-    const u2 = safeParse(localStorage.getItem("usuario"));
-    if (!u2 && !esLogin && !esRegistro && !esResetPassword) location.replace(LOGIN);
-  });
 </script>
+
