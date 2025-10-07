@@ -1,0 +1,6 @@
+Array
+(
+    [titulo] => Córdoba (Córdoba) → rio segundo
+    [precio] => 1400
+    [cantidad] => 1
+)

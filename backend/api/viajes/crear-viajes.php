@@ -1,0 +1,116 @@
+<?php
+declare(strict_types=1);
+ini_set('display_errors', '1');
+error_reporting(E_ALL);
+header('Content-Type: application/json; charset=utf-8');
+
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { exit; }
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+  http_response_code(405);
+  echo json_encode(['error' => 'Método no permitido']);
+  exit;
+}
+
+require_once __DIR__ . '/../../config/db.php';
+
+$pdo = db();
+
+// 🔐 Validar token en el header
+$headers = getallheaders();
+if (!isset($headers['Authorization'])) {
+  http_response_code(401);
+  echo json_encode(['error' => 'Token faltante']);
+  exit;
+}
+
+list($type, $token) = explode(' ', $headers['Authorization'], 2);
+if (strcasecmp($type, 'Bearer') !== 0 || empty($token)) {
+  http_response_code(401);
+  echo json_encode(['error' => 'Formato de token inválido']);
+  exit;
+}
+
+// Buscar sesión en la BD
+$stmt = $pdo->prepare("SELECT id_usuario, expira_en FROM sesiones WHERE token = ? LIMIT 1");
+$stmt->execute([$token]);
+$sesion = $stmt->fetch();
+
+if (!$sesion) {
+  http_response_code(401);
+  echo json_encode(['error' => 'Token inválido']);
+  exit;
+}
+if (new DateTime() > new DateTime($sesion['expira_en'])) {
+  http_response_code(401);
+  echo json_encode(['error' => 'Token expirado']);
+  exit;
+}
+
+$id_usuario = (int)$sesion['id_usuario'];
+
+// Leer JSON del body
+$raw = file_get_contents('php://input');
+$data = json_decode($raw, true);
+if (!is_array($data)) {
+  http_response_code(400);
+  echo json_encode(['error' => 'JSON inválido']);
+  exit;
+}
+
+// Validar campos requeridos (sin id_usuario ahora)
+$required = ['origen','destino','fecha_hora_salida','lugares','precio'];
+foreach ($required as $f) {
+  if (!isset($data[$f]) || trim((string)$data[$f]) === '') {
+    http_response_code(400);
+    echo json_encode(['error' => "Falta el campo: $f"]);
+    exit;
+  }
+}
+
+$origen   = trim((string)$data['origen']);
+$destino  = trim((string)$data['destino']);
+$fecha    = trim((string)$data['fecha_hora_salida']);
+$lugares  = (int)$data['lugares'];
+$precio   = (float)$data['precio'];
+$permite  = isset($data['permite_encomiendas']) ? (int)$data['permite_encomiendas'] : 0;
+$detalles = isset($data['detalles']) ? trim((string)$data['detalles']) : null;
+
+if ($lugares <= 0 || $precio <= 0) {
+  http_response_code(400);
+  echo json_encode(['error' => 'Valores inválidos']);
+  exit;
+}
+
+$dt = DateTime::createFromFormat('Y-m-d H:i:s', $fecha);
+if (!$dt || $dt->format('Y-m-d H:i:s') !== $fecha) {
+  http_response_code(400);
+  echo json_encode(['error' => 'La fecha debe tener el formato YYYY-MM-DD HH:MM:SS']);
+  exit;
+}
+
+// Insertar viaje
+try {
+  $sql = "INSERT INTO viajes
+    (ID_Usuario, Origen, Destino, Fecha_Hora_Salida, Lugares_Disponibles, Precio, Permite_Encomiendas, Detalles, Estado)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Disponible')";
+  $stmt = $pdo->prepare($sql);
+  $stmt->execute([
+    $id_usuario,
+    $origen,
+    $destino,
+    $fecha,
+    $lugares,
+    $precio,
+    $permite,
+    $detalles
+  ]);
+
+  http_response_code(201);
+  echo json_encode([
+    'ok' => true,
+    'id_viaje' => (int)$pdo->lastInsertId()
+  ]);
+} catch (Throwable $e) {
+  http_response_code(500);
+  echo json_encode(['error' => 'Error en el servidor', 'detail' => $e->getMessage()]);
+}
