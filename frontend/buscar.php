@@ -25,14 +25,12 @@ declare(strict_types=1);
       <div class="grid">
         <div class="col-3">
           <label>Origen</label>
-          <input id="origen" list="origenList" placeholder="Córdoba" />
-          <datalist id="origenList"></datalist>
+          <input id="origen" placeholder="Córdoba" />
         </div>
 
         <div class="col-3">
           <label>Destino</label>
-          <input id="destino" list="destinoList" placeholder="Villa del Rosario" />
-          <datalist id="destinoList"></datalist>
+          <input id="destino" placeholder="Villa del Rosario" />
         </div>
 
         <div class="col-2">
@@ -83,11 +81,26 @@ let limit = 10, offset = 0, includeConductor = 0;
 const results = document.getElementById('results');
 const badgeTotal = document.getElementById('badgeTotal');
 
-document.getElementById('searchForm').addEventListener('submit', e => { e.preventDefault(); offset=0; buscar(); });
-document.getElementById('limpiar').addEventListener('click', () => { document.getElementById('searchForm').reset(); offset=0; buscar(); });
-document.getElementById('toggleConductor').addEventListener('click', () => { includeConductor = includeConductor ? 0 : 1; buscar(); });
-document.getElementById('prev').addEventListener('click', () => { offset = Math.max(0, offset-limit); buscar(); });
-document.getElementById('next').addEventListener('click', () => { offset += limit; buscar(); });
+document.getElementById('limpiar').addEventListener('click', () => { 
+  document.getElementById('searchForm').reset(); 
+  offset=0; 
+  buscar(); 
+});
+
+document.getElementById('toggleConductor').addEventListener('click', () => { 
+  includeConductor = includeConductor ? 0 : 1; 
+  buscar(); 
+});
+
+document.getElementById('prev').addEventListener('click', () => { 
+  offset = Math.max(0, offset-limit); 
+  buscar(); 
+});
+
+document.getElementById('next').addEventListener('click', () => { 
+  offset += limit; 
+  buscar(); 
+});
 
 async function buscar(){
   const q = new URLSearchParams();
@@ -149,35 +162,66 @@ function renderResults(items){
 // primera carga
 buscar();
 
-async function cargarCiudades(inputId, listId) {
-  const input = document.getElementById(inputId);
-  const list = document.getElementById(listId);
-  input.addEventListener('input', async () => {
-    const query = input.value.trim();
-    if (query.length<3) return;
-    try {
-      const res = await fetch(`https://apis.datos.gob.ar/georef/api/localidades?nombre=${encodeURIComponent(query)}&max=10`);
-      const data = await res.json();
-      list.innerHTML = '';
-      if (data.localidades){
-        data.localidades.forEach(loc=>{
-          const opt = document.createElement('option');
-          opt.value = `${loc.nombre} (${loc.provincia.nombre})`;
-          list.appendChild(opt);
-        });
-      }
-    } catch(err){
-      console.error("Error cargando ciudades:", err);
+// ---- Google Places Autocomplete ----
+function setupAutocomplete(input) {
+  const autocomplete = new google.maps.places.Autocomplete(input, {
+    types: ['(cities)'],
+    componentRestrictions: { country: 'ar' }
+  });
+
+  let valido = false;
+
+  autocomplete.addListener('place_changed', () => {
+    const place = autocomplete.getPlace();
+    if (!place.geometry) {
+      valido = false;
+      input.value = '';
+    } else {
+      valido = true;
     }
   });
+
+  input.addEventListener('blur', () => {
+    if (!valido) input.value = '';
+  });
+
+  return { autocomplete, getValido: () => valido };
 }
 
-// activar autocompletado
-cargarCiudades('origen','origenList');
-cargarCiudades('destino','destinoList');
+let origenSetup, destinoSetup;
+
+function initAutocomplete() {
+  origenSetup = setupAutocomplete(document.getElementById('origen'));
+  destinoSetup = setupAutocomplete(document.getElementById('destino'));
+}
+
+// Validación al enviar formulario
+document.getElementById('searchForm').addEventListener('submit', e => {
+  e.preventDefault();
+
+  if (!origenSetup.getValido()) {
+    alert("Por favor seleccioná una ciudad válida en Origen");
+    document.getElementById('origen').focus();
+    return;
+  }
+
+  if (!destinoSetup.getValido()) {
+    alert("Por favor seleccioná una ciudad válida en Destino");
+    document.getElementById('destino').focus();
+    return;
+  }
+
+  offset = 0;
+  buscar();
+});
 
 </script>
-<?php require __DIR__ . '/partials/footer.php'; ?>
 
+<!-- Cargar Google Maps con Places API -->
+<script async defer
+  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBnDDeYhxpb6H8zyDJA38h7k_Xs-HT5OB4&libraries=places&callback=initAutocomplete">
+</script>
+
+<?php require __DIR__ . '/partials/footer.php'; ?>
 </body>
 </html>
