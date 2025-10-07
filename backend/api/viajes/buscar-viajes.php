@@ -99,7 +99,7 @@ $total = (int)$stmt->fetchColumn();
 
 // ---------- SELECT principal (+ join) ------
 $select = "SELECT
-    v.ID_Viaje, v.ID_Conductor, v.Origen, v.Destino,
+    v.ID_Viaje, v.ID_Usuario, v.Origen, v.Destino,
     v.Fecha_Hora_Salida, v.Lugares_Disponibles, v.Precio,
     v.Permite_Encomiendas, v.Detalles, v.Estado";
 
@@ -109,7 +109,7 @@ if ($incCond === 1) {
         u.Nombre AS Conductor_Nombre,
         u.Apellido AS Conductor_Apellido,
         u.Telefono AS Conductor_Telefono";
-    $join = " LEFT JOIN usuarios u ON u.ID_Usuario = v.ID_Conductor ";
+    $join = " LEFT JOIN usuarios u ON u.ID_Usuario = v.ID_Usuario ";
 }
 
 $sql = "$select

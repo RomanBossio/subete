@@ -1,0 +1,33 @@
+document.querySelectorAll('.btn-finalizar').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const id = btn.dataset.id;
+    if (confirm("¿Deseas finalizar este viaje?")) {
+      const res = await fetch('/subete/backend/api/viajes/finalizar_viaje.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ id_viaje: id })
+      });
+      const data = await res.json();
+      alert(data.msg || data.error);
+      if (data.ok) location.reload();
+    }
+  });
+});
+
+// Cancelar viaje (solo conductor)
+document.querySelectorAll('.btn.cancelar-viaje').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const id = btn.dataset.id;
+    if (!confirm('¿Seguro que deseas cancelar este viaje?')) return;
+
+    const res = await fetch('/subete/backend/api/viajes/cancelar_viaje.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ id_viaje: id })
+    });
+
+    const dataRes = await res.json();
+    alert(dataRes.msg || dataRes.error);
+    if (dataRes.ok) location.reload();
+  });
+});

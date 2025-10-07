@@ -39,7 +39,7 @@ if (!$id_viaje || !is_numeric($id_viaje)) {
 }
 
 // Verificar que el viaje le pertenezca al conductor
-$stmt = $pdo->prepare("SELECT * FROM viajes WHERE ID_Viaje = ? AND ID_Conductor = ?");
+$stmt = $pdo->prepare("SELECT * FROM viajes WHERE ID_Viaje = ? AND ID_Usuario = ?");
 $stmt->execute([$id_viaje, $id_usuario]);
 $viaje = $stmt->fetch(PDO::FETCH_ASSOC);
 if (!$viaje) {

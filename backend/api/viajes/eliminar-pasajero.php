@@ -36,10 +36,10 @@ if (!$id_reserva || !is_numeric($id_reserva)) {
 }
 
 $stmt = $pdo->prepare("
-    SELECT r.ID_Reserva, r.ID_Viaje, r.cantidad, v.ID_Conductor
+    SELECT r.ID_Reserva, r.ID_Viaje, r.cantidad, v.ID_Usuario
     FROM reservas r
     JOIN viajes v ON r.ID_Viaje = v.ID_Viaje
-    WHERE r.ID_Reserva = ? AND v.ID_Conductor = ?
+    WHERE r.ID_Reserva = ? AND v.ID_Usuario = ?
 ");
 $stmt->execute([$id_reserva, $id_usuario]);
 $reserva = $stmt->fetch(PDO::FETCH_ASSOC);
