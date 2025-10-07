@@ -20,6 +20,10 @@
 
   <h3 class="section-title mt-4">Historial de viajes</h3>
   <div id="viajes-pasados" class="results mt-2"></div>
+  <div class="pagination mt-3">
+    <button id="prev-page" class="btn" disabled>Anterior</button>
+    <button id="next-page" class="btn">Siguiente</button>
+  </div>
 </main>
 
 <script>
@@ -29,13 +33,19 @@ const API_CANCELAR = '/subete/backend/api/viajes/cancelar-reserva.php';
 const API_VIAJES = '/subete/backend/api/viajes/mis-viajes-publicados.php';
 const API_PASAJEROS = '/subete/backend/api/viajes/pasajeros-por-viaje.php';
 const API_ELIMINAR_PASAJERO = '/subete/backend/api/viajes/eliminar-pasajero.php';
+const API_ELIMINAR_VIAJE = '/subete/backend/api/viajes/eliminar-viaje.php';
 const API_PAGO = '/subete/backend/api/pagos/crear-preferencia.php';
-
 
 const msg = document.getElementById('msg');
 const reservasList = document.getElementById('reservas-list');
 const viajesFuturos = document.getElementById('viajes-futuros');
 const viajesPasados = document.getElementById('viajes-pasados');
+const prevBtn = document.getElementById('prev-page');
+const nextBtn = document.getElementById('next-page');
+
+let historialPagina = 0;
+const historialPorPagina = 6;
+let historialViajes = [];
 
 if (!token) {
   msg.textContent = 'Debes iniciar sesión para ver tus reservas';
@@ -47,9 +57,7 @@ if (!token) {
 
 async function cargarReservas() {
   try {
-    const res = await fetch(API_RESERVAS, {
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
+    const res = await fetch(API_RESERVAS, { headers: { 'Authorization': 'Bearer ' + token } });
     const data = await res.json();
 
     if (!data.ok) {
@@ -88,21 +96,15 @@ async function cargarReservas() {
       btn.addEventListener('click', async (e) => {
         const card = e.target.closest('.card');
         const id_reserva = card.dataset.id;
-
         if (!confirm('¿Estás seguro de cancelar esta reserva?')) return;
 
         try {
           const resCancel = await fetch(API_CANCELAR, {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer ' + token
-            },
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
             body: JSON.stringify({ id_reserva })
           });
-
           const dataCancel = await resCancel.json();
-
           if (dataCancel.ok) {
             msg.textContent = dataCancel.msg || 'Reserva cancelada';
             msg.className = 'alert success mt-2';
@@ -119,36 +121,22 @@ async function cargarReservas() {
     });
 
     document.querySelectorAll('.btn.pagar').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
+      btn.addEventListener('click', async () => {
         const titulo = btn.dataset.titulo;
         const precio = parseFloat(btn.dataset.precio);
         const cantidad = parseInt(btn.dataset.cantidad);
-
-        if (!titulo || isNaN(precio) || isNaN(cantidad)) {
-          alert("Datos de reserva inválidos.");
-          return;
-        }
+        if (!titulo || isNaN(precio) || isNaN(cantidad)) { alert("Datos de reserva inválidos."); return; }
 
         try {
-           console.log({ titulo, precio, cantidad });
-
           const resPago = await fetch(API_PAGO, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ titulo, precio, cantidad })
           });
-
           const dataPago = await resPago.json();
-
-          if (dataPago.ok && dataPago.init_point) {
-            window.location.href = dataPago.init_point;
-          } else {
-            alert(dataPago.error || 'Error al iniciar el pago');
-          }
-        } catch (err) {
-          console.error('Error al iniciar pago:', err);
-          alert('Error al conectar con el servidor');
-        }
+          if (dataPago.ok && dataPago.init_point) window.location.href = dataPago.init_point;
+          else alert(dataPago.error || 'Error al iniciar el pago');
+        } catch (err) { alert('Error al conectar con el servidor'); }
       });
     });
 
@@ -160,11 +148,8 @@ async function cargarReservas() {
 
 async function cargarViajesPublicados() {
   try {
-    const res = await fetch(API_VIAJES, {
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
+    const res = await fetch(API_VIAJES, { headers: { 'Authorization': 'Bearer ' + token } });
     const data = await res.json();
-
     if (!data.ok) {
       viajesFuturos.innerHTML = '<p class="muted">Error al cargar tus viajes publicados.</p>';
       return;
@@ -173,6 +158,7 @@ async function cargarViajesPublicados() {
     const ahora = new Date();
     viajesFuturos.innerHTML = '';
     viajesPasados.innerHTML = '';
+    historialViajes = [];
 
     for (const viaje of data.viajes) {
       const fechaViaje = new Date(viaje.Fecha_Hora_Salida);
@@ -185,50 +171,94 @@ async function cargarViajesPublicados() {
         <p><strong>Pasajeros:</strong> <span class="pasajeros-loading">Cargando...</span></p>
       `;
 
-      if (fechaViaje > ahora) {
+      // Botón eliminar viaje
+      if(fechaViaje > ahora){
+        card.innerHTML += `<button class="btn eliminar-viaje" data-id="${viaje.ID_Viaje}">Eliminar viaje</button>`;
         viajesFuturos.appendChild(card);
       } else {
-        viajesPasados.appendChild(card);
+        historialViajes.push(viaje);
       }
 
       try {
         const pasajerosRes = await fetch(API_PASAJEROS, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + token
-          },
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
           body: JSON.stringify({ id_viaje: viaje.ID_Viaje })
         });
-
         const pasajerosData = await pasajerosRes.json();
         const contenedor = card.querySelector('.pasajeros-loading');
-
-        if (!pasajerosData.ok) {
-          contenedor.textContent = 'Error al cargar pasajeros.';
-        } else if (!Array.isArray(pasajerosData.pasajeros) || pasajerosData.pasajeros.length === 0) {
-          contenedor.textContent = 'Sin pasajeros.';
-        } else {
+        if (!pasajerosData.ok) contenedor.textContent = 'Error al cargar pasajeros.';
+        else if (!Array.isArray(pasajerosData.pasajeros) || pasajerosData.pasajeros.length === 0) contenedor.textContent = 'Sin pasajeros.';
+        else {
           contenedor.innerHTML = '<ul>' + pasajerosData.pasajeros.map(p =>
             `<li>
               <strong>${p.Nombre} ${p.Apellido}</strong><br>
               <span class="muted">Tel:</span> <a href="tel:${p.Telefono}">${p.Telefono}</a><br>
               <span class="muted">Asientos:</span> ${p.cantidad}<br>
               ${fechaViaje > ahora ? `<button class="btn eliminar-pasajero" data-id="${p.id_reserva}">Eliminar</button>` : ''}
-            </li>`
-          ).join('') + '</ul>';
+            </li>`).join('') + '</ul>';
         }
-
       } catch (err) {
         card.querySelector('.pasajeros-loading').textContent = 'Error al cargar pasajeros.';
       }
     }
+    mostrarHistorial();
   } catch (err) {
     viajesFuturos.innerHTML = '<p class="muted">Error al cargar tus viajes publicados.</p>';
   }
 }
 
+// Función paginación historial
+function mostrarHistorial() {
+  viajesPasados.innerHTML = '';
+  const inicio = historialPagina * historialPorPagina;
+  const fin = inicio + historialPorPagina;
+  const mostrar = historialViajes.slice(inicio, fin);
+
+  mostrar.forEach(viaje => {
+    const fechaViaje = new Date(viaje.Fecha_Hora_Salida);
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <h3>${viaje.Origen} → ${viaje.Destino}</h3>
+      <p class="muted">Fecha salida: ${viaje.Fecha_Hora_Salida}</p>
+      <p>Lugares disponibles: <strong>${viaje.Lugares_Disponibles}</strong></p>
+      <p><strong>Pasajeros:</strong> <span class="pasajeros-loading">Cargando...</span></p>
+    `;
+    viajesPasados.appendChild(card);
+
+    fetch(API_PASAJEROS, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ id_viaje: viaje.ID_Viaje })
+    }).then(res => res.json()).then(pasajerosData => {
+      const contenedor = card.querySelector('.pasajeros-loading');
+      if (!pasajerosData.ok) contenedor.textContent = 'Error al cargar pasajeros.';
+      else if (!Array.isArray(pasajerosData.pasajeros) || pasajerosData.pasajeros.length === 0) contenedor.textContent = 'Sin pasajeros.';
+      else {
+        contenedor.innerHTML = '<ul>' + pasajerosData.pasajeros.map(p =>
+          `<li>
+            <strong>${p.Nombre} ${p.Apellido}</strong><br>
+            <span class="muted">Tel:</span> <a href="tel:${p.Telefono}">${p.Telefono}</a><br>
+            <span class="muted">Asientos:</span> ${p.cantidad}<br>
+          </li>`).join('') + '</ul>';
+      }
+    });
+  });
+
+  prevBtn.disabled = historialPagina === 0;
+  nextBtn.disabled = (historialPagina + 1) * historialPorPagina >= historialViajes.length;
+}
+
+prevBtn.addEventListener('click', () => {
+  if(historialPagina > 0) { historialPagina--; mostrarHistorial(); }
+});
+nextBtn.addEventListener('click', () => {
+  if((historialPagina + 1) * historialPorPagina < historialViajes.length) { historialPagina++; mostrarHistorial(); }
+});
+
 document.addEventListener('click', async (e) => {
+  // Eliminar pasajero
   if (e.target.classList.contains('eliminar-pasajero')) {
     const id_reserva = e.target.dataset.id;
     if (!confirm('¿Eliminar este pasajero?')) return;
@@ -236,27 +266,35 @@ document.addEventListener('click', async (e) => {
     try {
       const res = await fetch(API_ELIMINAR_PASAJERO, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + token
-        },
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
         body: JSON.stringify({ id_reserva })
       });
+      const data = await res.json();
+      if (data.ok) e.target.closest('li').remove();
+      else alert(data.error || 'Error al eliminar pasajero');
+    } catch { alert('Error de conexión'); }
+  }
 
+  // Eliminar viaje
+  if (e.target.classList.contains('eliminar-viaje')) {
+    const id_viaje = e.target.dataset.id;
+    if (!confirm('¿Eliminar este viaje?')) return;
+
+    try {
+      const res = await fetch(API_ELIMINAR_VIAJE, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ id_viaje })
+      });
       const data = await res.json();
       if (data.ok) {
-        e.target.closest('li').remove();
-        alert('Pasajero eliminado');
-      } else {
-        alert(data.error || 'Error al eliminar pasajero');
-      }
-    } catch (err) {
-      alert('Error de conexión');
-    }
+        alert('Viaje eliminado');
+        cargarViajesPublicados();
+      } else alert(data.error || 'Error al eliminar viaje');
+    } catch { alert('Error de conexión'); }
   }
 });
 </script>
 <?php require __DIR__ . '/partials/footer.php'; ?>
-
 </body>
 </html>

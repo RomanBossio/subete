@@ -15,7 +15,7 @@
       border-radius: 8px;
       border: 1px solid #ccc;
     }
-    #infoRuta {
+    #infoRuta, #infoClima {
       margin-top: 15px;
       background: #f9f9f9;
       border: 1px solid #ddd;
@@ -35,7 +35,8 @@
   <h1>Detalle de viaje</h1>
 
   <div id="view" class="viaje-card"></div>
-  <div id="infoRuta"></div> <!-- aquí mostramos duración/distancia -->
+  <div id="infoRuta"></div>
+  <div id="infoClima"></div> <!-- Clima del día del viaje -->
   <div id="msg" class="mt-2"></div>
   <div id="map"></div>
 </main>
@@ -43,11 +44,14 @@
 <script>
 const API_URL = '/subete/backend/api/viajes/detalle.php';
 const API_RESERVA = '/subete/backend/api/viajes/reservas.php';
+const API_CLIMA = '/subete/backend/api/viajes/clima.php';
+
 const params = new URLSearchParams(location.search);
 const id = Number(params.get('id') || 0);
 const view  = document.getElementById('view');
 const msg   = document.getElementById('msg');
 const infoRuta = document.getElementById('infoRuta');
+const infoClima = document.getElementById('infoClima');
 const token = localStorage.getItem('token');
 
 let viajeData = null;
@@ -58,6 +62,30 @@ function showMsg(text, type='info') {
   msg.className = type === 'success' ? 'alert success mt-2' : (type === 'error' ? 'alert error mt-2' : 'mt-2');
 }
 
+// Mostrar clima según destino y fecha
+async function cargarClima(ciudad, fechaHora) {
+  if (!ciudad || !fechaHora) return;
+  try {
+    const fecha = fechaHora.split(' ')[0]; // tomamos solo YYYY-MM-DD
+    const res = await fetch(`${API_CLIMA}?ciudad=${encodeURIComponent(ciudad)}&fecha=${fecha}`);
+    const data = await res.json();
+
+    if (data.ok) {
+      infoClima.innerHTML = `
+        <h3>🌤️ Clima estimado el día del viaje</h3>
+        <p><strong>${data.ciudad}</strong> - ${data.fecha}</p>
+        <p><strong>Condición:</strong> ${data.condicion}</p>
+        <p><strong>Temperatura:</strong> ${data.temp_min}°C a ${data.temp_max}°C</p>
+        ${data.precipitacion ? `<p><strong>Prob. de lluvia:</strong> ${data.precipitacion}%</p>` : ''}
+      `;
+    } else {
+      infoClima.innerHTML = `<p>No se pudo obtener el clima del destino.</p>`;
+    }
+  } catch (e) {
+    infoClima.innerHTML = `<p>Error al cargar el clima.</p>`;
+  }
+}
+
 // Inicializar mapa y mostrar duración/distancia
 function initMap() {
   if (!viajeData) return;
@@ -66,11 +94,10 @@ function initMap() {
   directionsRenderer = new google.maps.DirectionsRenderer();
   map = new google.maps.Map(document.getElementById("map"), {
     zoom: 7,
-    center: { lat: -34.6037, lng: -58.3816 } // Buenos Aires por defecto
+    center: { lat: -34.6037, lng: -58.3816 }
   });
   directionsRenderer.setMap(map);
 
-  // Geocodificar y colocar marcadores
   const geocoder = new google.maps.Geocoder();
 
   geocoder.geocode({ address: viajeData.Origen }, (results, status) => {
@@ -93,7 +120,6 @@ function initMap() {
     }
   });
 
-  // Solicitar ruta y mostrar datos
   directionsService.route({
     origin: viajeData.Origen,
     destination: viajeData.Destino,
@@ -102,18 +128,15 @@ function initMap() {
     if (status === "OK") {
       directionsRenderer.setDirections(result);
 
-      // Extraer distancia y duración
       const leg = result.routes[0].legs[0];
       const distancia = leg.distance.text;
       const duracion = leg.duration.text;
 
-      // Mostrar en pantalla
       infoRuta.innerHTML = `
         <p><strong>Duración aproximada:</strong> ${duracion}</p>
         <p><strong>Distancia:</strong> ${distancia}</p>
       `;
 
-      // Ajustar zoom para mostrar toda la ruta
       const bounds = new google.maps.LatLngBounds();
       const route = result.routes[0].overview_path;
       route.forEach(point => bounds.extend(point));
@@ -144,7 +167,6 @@ function initMap() {
     const v = data.viaje;
     viajeData = v;
 
-    // Mostrar detalles del viaje
     const encom = Number(v.Permite_Encomiendas) === 1 ? '✔ Acepta encomiendas' : 'No acepta encomiendas';
     const precio = (Number(v.Precio) || 0).toLocaleString('es-AR');
     let disponibles = Number(v.Lugares_Disponibles) || 0;
@@ -226,6 +248,9 @@ function initMap() {
       } catch(e) { showMsg('Error al reservar (problema de conexión)','error'); }
     });
 
+    // Cargar clima del destino y fecha del viaje
+    cargarClima(v.Destino, v.Fecha_Hora_Salida);
+
     // Inicializar mapa después de cargar datos
     initMap();
 
@@ -244,6 +269,5 @@ document.head.appendChild(gmapsScript);
 
 </script>
 <?php require __DIR__ . '/partials/footer.php'; ?>
-
 </body>
 </html>
