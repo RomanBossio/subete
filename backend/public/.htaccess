@@ -1,4 +1,0 @@
-# public/.htaccess (si montás todo bajo /public)
-RewriteEngine On
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule ^ api/%{REQUEST_URI} [QSA,NC,L]
