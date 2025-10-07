@@ -120,8 +120,8 @@ body::before {
   content: "";
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4); /* oscurece un poco */
-  backdrop-filter: blur(6px);      /* difumina la imagen */
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(6px);
   z-index: -1;
 }
 
@@ -130,8 +130,6 @@ main.container {
   position: relative;
   z-index: 1;
 }
-
- 
   </style>
 </head>
 <body>
@@ -143,12 +141,10 @@ main.container {
       <form id="form-viaje">
         <div class="grid cols-2">
           <label>Origen
-            <input name="origen" id="origen" list="origenList" required>
-            <datalist id="origenList"></datalist>
+            <input name="origen" id="origen" required>
           </label>
           <label>Destino
-            <input name="destino" id="destino" list="destinoList" required>
-            <datalist id="destinoList"></datalist>
+            <input name="destino" id="destino" required>
           </label>
         </div>
 
@@ -188,18 +184,25 @@ const msg = document.getElementById('msg');
 
 f.addEventListener('submit', async (e) => {
   e.preventDefault();
-  const formData = new FormData(f);
 
-  // Convertir datetime-local a formato YYYY-MM-DD HH:MM:SS
+  // Validar ciudad
+  if (!origenSetup.getValido()) {
+    alert("Por favor seleccioná una ciudad válida en Origen");
+    document.getElementById('origen').focus();
+    return;
+  }
+  if (!destinoSetup.getValido()) {
+    alert("Por favor seleccioná una ciudad válida en Destino");
+    document.getElementById('destino').focus();
+    return;
+  }
+
+  const formData = new FormData(f);
   const dtInput = formData.get('fecha_hora_salida');
   if (dtInput) formData.set('fecha_hora_salida', dtInput.replace('T', ' ') + ':00');
-
   const data = Object.fromEntries(formData.entries());
 
-  // ✔ Checkbox de encomiendas
   data.permite_encomiendas = document.getElementById('encomiendas').checked ? 1 : 0;
-
-  // Token
   const token = localStorage.getItem("token");
   if (!token) {
     msg.textContent = "Debes iniciar sesión para publicar un viaje";
@@ -229,35 +232,42 @@ f.addEventListener('submit', async (e) => {
   }
 });
 
-// Autocompletado de ciudades
-async function cargarCiudades(inputId, listId) {
-  const input = document.getElementById(inputId);
-  const list  = document.getElementById(listId);
+// ---- Google Places Autocomplete ----
+function setupAutocomplete(input) {
+  const autocomplete = new google.maps.places.Autocomplete(input, {
+    types: ['(cities)'],
+    componentRestrictions: { country: 'ar' }
+  });
 
-  input.addEventListener('input', async () => {
-    const query = input.value.trim();
-    if (query.length < 3) return;
-
-    try {
-      const res = await fetch(`https://apis.datos.gob.ar/georef/api/localidades?nombre=${encodeURIComponent(query)}&max=10`);
-      const data = await res.json();
-      list.innerHTML = '';
-      if (data.localidades) {
-        data.localidades.forEach(loc => {
-          const opt = document.createElement('option');
-          opt.value = `${loc.nombre} (${loc.provincia.nombre})`;
-          list.appendChild(opt);
-        });
-      }
-    } catch (err) {
-      console.error("Error cargando ciudades:", err);
+  let valido = false;
+  autocomplete.addListener('place_changed', () => {
+    const place = autocomplete.getPlace();
+    if (!place.geometry) {
+      valido = false;
+      input.value = '';
+    } else {
+      valido = true;
     }
   });
+
+  input.addEventListener('blur', () => {
+    if (!valido) input.value = '';
+  });
+
+  return { autocomplete, getValido: () => valido };
 }
 
-cargarCiudades('origen', 'origenList');
-cargarCiudades('destino', 'destinoList');
+let origenSetup, destinoSetup;
+function initAutocomplete() {
+  origenSetup = setupAutocomplete(document.getElementById('origen'));
+  destinoSetup = setupAutocomplete(document.getElementById('destino'));
+}
 
+</script>
+
+<!-- Cargar Google Maps con Places API -->
+<script async defer
+  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBnDDeYhxpb6H8zyDJA38h7k_Xs-HT5OB4&libraries=places&callback=initAutocomplete">
 </script>
 
 <?php require __DIR__ . '/partials/footer.php'; ?>
