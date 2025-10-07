@@ -16,11 +16,11 @@ $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 if ($id <= 0) { http_response_code(400); echo json_encode(['error'=>'Falta id']); exit; }
 
 $sql = "SELECT
-  v.ID_Viaje, v.ID_Conductor, v.Origen, v.Destino, v.Fecha_Hora_Salida,
+  v.ID_Viaje, v.ID_Usuario, v.Origen, v.Destino, v.Fecha_Hora_Salida,
   v.Lugares_Disponibles, v.Precio, v.Permite_Encomiendas, v.Detalles, v.Estado,
   u.Nombre AS Conductor_Nombre, u.Apellido AS Conductor_Apellido, u.Telefono AS Conductor_Telefono
 FROM viajes v
-LEFT JOIN usuarios u ON u.ID_Usuario = v.ID_Conductor
+LEFT JOIN usuarios u ON u.ID_Usuario = v.ID_Usuario
 WHERE v.ID_Viaje = ? LIMIT 1";
 
 $stmt = $pdo->prepare($sql);

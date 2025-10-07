@@ -46,7 +46,7 @@ if (new DateTime() > new DateTime($sesion['expira_en'])) {
   exit;
 }
 
-$id_conductor = (int)$sesion['id_usuario'];
+$id_usuario = (int)$sesion['id_usuario'];
 
 // Leer JSON del body
 $raw = file_get_contents('php://input');
@@ -57,7 +57,7 @@ if (!is_array($data)) {
   exit;
 }
 
-// Validar campos requeridos (sin id_conductor ahora)
+// Validar campos requeridos (sin id_usuario ahora)
 $required = ['origen','destino','fecha_hora_salida','lugares','precio'];
 foreach ($required as $f) {
   if (!isset($data[$f]) || trim((string)$data[$f]) === '') {
@@ -91,11 +91,11 @@ if (!$dt || $dt->format('Y-m-d H:i:s') !== $fecha) {
 // Insertar viaje
 try {
   $sql = "INSERT INTO viajes
-    (ID_Conductor, Origen, Destino, Fecha_Hora_Salida, Lugares_Disponibles, Precio, Permite_Encomiendas, Detalles, Estado)
+    (ID_Usuario, Origen, Destino, Fecha_Hora_Salida, Lugares_Disponibles, Precio, Permite_Encomiendas, Detalles, Estado)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Disponible')";
   $stmt = $pdo->prepare($sql);
   $stmt->execute([
-    $id_conductor,
+    $id_usuario,
     $origen,
     $destino,
     $fecha,

@@ -35,7 +35,7 @@ if (!$id_usuario) {
 $stmt = $pdo->prepare("
     SELECT ID_Viaje, Origen, Destino, Fecha_Hora_Salida, Lugares_Disponibles
     FROM viajes
-    WHERE ID_Conductor = ?
+    WHERE ID_Usuario = ?
     ORDER BY Fecha_Hora_Salida DESC
 ");
 $stmt->execute([$id_usuario]);
