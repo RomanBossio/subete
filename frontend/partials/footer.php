@@ -10,6 +10,7 @@
   border-radius:12px;
   background:#e6fdf8; /* verde agua muy clarito */
   color:#07261f;
+  position: relative; /* necesario para posicionar el logo dentro */
 }
 
 .footer-grid{
@@ -56,6 +57,27 @@
   text-decoration:underline;
 }
 
+/* === Imagen del logo flotando a la derecha === */
+.footer-logo-fixed{
+  position: absolute;
+  top: 50%;              /* lo centra verticalmente */
+  right: 40px;           /* mantiene el mismo margen lateral */
+  transform: translateY(-50%); /* centra el logo respecto al alto */
+  cursor: pointer;       /* indica que es clickeable */
+}
+
+.footer-logo-fixed img{
+  max-width: 150px;      /* tamaño más grande */
+  height: auto;
+  opacity: 0.9;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.footer-logo-fixed img:hover{
+  opacity: 1;
+  transform: translateY(-50%) scale(1.1); /* mantiene centrado al hacer zoom */
+}
+
 /* Copyright al final, centrado */
 .footer-bottom{
   text-align:center;
@@ -67,6 +89,15 @@
 /* Responsive */
 @media(max-width:720px){
   .footer-grid{ grid-template-columns:1fr; text-align:center; gap:16px; }
+  .footer-logo-fixed{
+    position: static;
+    margin: 15px auto 0;
+    text-align: center;
+  }
+  .footer-logo-fixed img{
+    max-width:120px;
+    transform:none;
+  }
 }
 </style>
 
@@ -99,8 +130,23 @@
     </div>
   </div>
 
+  <!-- Logo clickeable que lleva arriba -->
+  <div class="footer-logo-fixed" onclick="scrollToTop()" title="Volver arriba">
+    <img src="/subete/frontend/img/logo1.png" alt="Logo Súbete">
+  </div>
+
   <!-- Copyright -->
   <div class="footer-bottom">
     © <?= date('Y') ?> Súbete. Todos los derechos reservados.
   </div>
 </footer>
+
+<script>
+  // Scroll suave hacia arriba
+  function scrollToTop() {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  }
+</script>
