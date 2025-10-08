@@ -46,7 +46,7 @@
       // Header solo con nombre y salir
       navLeft.innerHTML = "";
       navRight.innerHTML = `
-        <span>👑 ${nombre}</span>
+        <span> ${nombre}</span>
         <a href="#" id="btn-salir">Salir</a>
       `;
     }
