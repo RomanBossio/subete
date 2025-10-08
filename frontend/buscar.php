@@ -14,14 +14,150 @@ declare(strict_types=1);
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Súbete · Buscar viajes</title>
   <link rel="stylesheet" href="css/app.css?v=1.0">
+  <style>
+    /* ==== Estilo de card para resultados ==== */
+    .results .card {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 16px;
+      padding: 20px 18px;
+      margin-bottom: 15px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .results .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+
+    .results .card h3 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      color: #1e88e5;
+    }
+
+    .results .card .meta {
+      margin: 4px 0;
+      font-size: 0.95rem;
+      color: #333;
+    }
+
+    .results .card .btn {
+      margin-top: 8px;
+      background-color: #1e88e5;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 500;
+      display: inline-block;
+      transition: background 0.3s;
+    }
+
+    .results .card .btn:hover {
+      background-color: #1565c0;
+    }
+    /* ==== Estilo de card para el formulario de búsqueda ==== */
+.find-form {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  padding: 25px 20px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  margin-bottom: 20px;
+}
+
+.find-form h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #1e88e5; /* Color celeste del título */
+  text-align: center;
+}
+
+.find-form label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: #333;
+}
+
+.find-form input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+  margin-bottom: 12px;
+}
+
+.find-form .checkbox-group {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.find-form .checkbox-group input {
+  width: auto;
+  margin-right: 8px;
+}
+
+.find-form .btn.primary {
+  width: 100%;
+  background-color: #1e88e5;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.3s;
+  font-size: 1rem;
+  margin-bottom: 6px;
+}
+
+.find-form .btn.primary:hover {
+  background-color: #1565c0;
+}
+
+.find-form .btn {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #1e88e5;
+  background: white;
+  color: #1e88e5;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.3s, color 0.3s;
+  margin-bottom: 6px;
+}
+
+.find-form .btn:hover {
+  background-color: #1e88e5;
+  color: white;
+}
+
+/* Grids dentro del formulario */
+.find-form .grid.cols-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+@media(max-width: 600px){
+  .find-form .grid.cols-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+  </style>
 </head>
 <body>
   <?php $page='buscar'; require __DIR__ . '/partials/header.php'; ?>
 
   <main class="container">
-    <h1>Buscar viajes</h1>
 
     <form id="searchForm" class="find-form">
+      <h2>Buscar viajes</h2> <!-- Título dentro de la card -->
       <div class="grid">
         <div class="col-3">
           <label>Origen</label>
