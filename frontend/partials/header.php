@@ -1,5 +1,9 @@
 <header class="app-header"> 
-  <div class="brand">Súbete</div>
+  <div class="brand">
+  <img src="/subete/frontend/img/hero-carpool.jpg" alt="Súbete" style="height:40px; vertical-align: middle; margin-right:8px;">
+  Súbete
+</div>
+
   <nav class="nav">
     <div class="nav-left" id="nav-left">
       <!-- Links agregados dinámicamente -->
@@ -8,6 +12,62 @@
       <!-- Usuario y salir -->
     </div>
   </nav>
+
+  <style>
+    /* Header independiente */
+    .app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      background-color: #fff; /* fondo blanco */
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      z-index: 1000;
+      position: relative;
+    }
+
+    .app-header .brand {
+      font-weight: bold;
+      font-size: 1.5rem;
+      color: #007bff; /* color principal */
+    }
+
+    .app-header .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .nav-left a,
+    .nav-right a {
+      margin-right: 10px;
+      text-decoration: none;
+      color: #333;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .nav-left a:hover,
+    .nav-right a:hover {
+      color: #007bff;
+    }
+
+    .nav-right span {
+      font-weight: 600;
+      color: #007bff;
+      margin-right: 5px;
+    }
+
+    /* Responsive */
+    @media(max-width:720px){
+      .app-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+    }
+  </style>
 </header>
 
 <script>
@@ -36,7 +96,6 @@
   if (!usuario && !esLogin && !esRegistro && !esResetPassword) {
     window.location.replace(LOGIN);
   } else if (usuario) {
-    // Normalizo campos por si cambian de nombre
     const rol     = (usuario.rol || usuario.Rol || "").toLowerCase();
     const nombre  = usuario.nombre || usuario.Nombre || usuario.name || "Usuario";
     const homePath = rol === "admin" ? HOME_ADMIN : HOME_USER;
