@@ -5,57 +5,53 @@ require __DIR__ . '/../../config/db.php';
 
 $pdo = db();
 
-// Leer token
+// --- Auth ---
 $headers = function_exists('getallheaders') ? getallheaders() : $_SERVER;
 $auth = $headers['Authorization'] ?? $headers['authorization'] ?? $_SERVER['HTTP_AUTHORIZATION'] ?? '';
-if (!$auth || stripos($auth, 'bearer ') !== 0) {
-    echo json_encode(['ok'=>false,'error'=>'No hay token']);
-    exit;
-}
+if (!$auth || stripos($auth, 'bearer ') !== 0) { echo json_encode(['ok'=>false,'error'=>'No hay token']); exit; }
 $token = substr($auth, 7);
 
-// Verificar sesión
-$stmt = $pdo->prepare("SELECT * FROM sesiones WHERE token = ? LIMIT 1");
-$stmt->execute([$token]);
-$session = $stmt->fetch(PDO::FETCH_ASSOC);
-if (!$session || new DateTime() > new DateTime($session['expira_en'])) {
-    echo json_encode(['ok'=>false,'error'=>'Token inválido o expirado']);
-    exit;
+// sesión + rol
+$q = $pdo->prepare("SELECT s.id_usuario, u.rol
+                    FROM sesiones s JOIN usuarios u ON u.ID_Usuario = s.id_usuario
+                    WHERE s.token=? LIMIT 1");
+$q->execute([$token]);
+$me = $q->fetch(PDO::FETCH_ASSOC);
+if (!$me) { echo json_encode(['ok'=>false,'error'=>'Token inválido o expirado']); exit; }
+$id_me = (int)$me['id_usuario'];
+$rol   = $me['rol'] ?? 'usuario';
+
+// --- Body ---
+$raw = file_get_contents('php://input');
+$in  = json_decode($raw, true) ?: [];
+$id_viaje = (int)($in['id_viaje'] ?? $in['ID_Viaje'] ?? 0);
+if ($id_viaje <= 0) { echo json_encode(['ok'=>false,'error'=>'Falta id_viaje']); exit; }
+
+// Verificar que sea el conductor del viaje o admin
+$qv = $pdo->prepare("SELECT ID_Usuario FROM viajes WHERE ID_Viaje=? LIMIT 1");
+$qv->execute([$id_viaje]);
+$conductor = (int)$qv->fetchColumn();
+if (!$conductor) { echo json_encode(['ok'=>false,'error'=>'Viaje no encontrado']); exit; }
+if ($rol !== 'admin' && $conductor !== $id_me) {
+  echo json_encode(['ok'=>false,'error'=>'No autorizado']); exit;
 }
 
-$id_usuario = $session['id_usuario'] ?? null;
-if (!$id_usuario) {
-    echo json_encode(['ok'=>false,'error'=>'Sesión inválida']);
-    exit;
-}
-
-// Leer ID del viaje
-$input = json_decode(file_get_contents('php://input'), true);
-$id_viaje = $input['id_viaje'] ?? null;
-
-if (!$id_viaje || !is_numeric($id_viaje)) {
-    echo json_encode(['ok'=>false,'error'=>'ID de viaje inválido']);
-    exit;
-}
-
-// Verificar que el viaje le pertenezca al conductor
-$stmt = $pdo->prepare("SELECT * FROM viajes WHERE ID_Viaje = ? AND ID_Usuario = ?");
-$stmt->execute([$id_viaje, $id_usuario]);
-$viaje = $stmt->fetch(PDO::FETCH_ASSOC);
-if (!$viaje) {
-    echo json_encode(['ok'=>false,'error'=>'No tienes permisos sobre este viaje']);
-    exit;
-}
-
-// 🔧 Obtener pasajeros incluyendo el ID_Reserva (necesario para poder eliminar)
-$stmt = $pdo->prepare("
-  SELECT r.ID_Reserva AS id_reserva, u.ID_Usuario, u.Nombre, u.Apellido, u.Telefono, r.cantidad
+// Traer pasajeros
+$qp = $pdo->prepare("
+  SELECT
+    r.ID_Reserva,
+    r.ID_Usuario,
+    r.cantidad,
+    r.Estado    AS EstadoReserva,
+    u.Nombre,
+    u.Apellido,
+    u.Telefono
   FROM reservas r
-  JOIN usuarios u ON r.ID_Usuario = u.ID_Usuario
-  WHERE r.ID_Viaje = ? AND r.Estado = 'pendiente'
+  JOIN usuarios u ON u.ID_Usuario = r.ID_Usuario
+  WHERE r.ID_Viaje = ?
+  ORDER BY r.Fecha_Reserva ASC
 ");
-$stmt->execute([$id_viaje]);
-$pasajeros = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$qp->execute([$id_viaje]);
+$pasajeros = $qp->fetchAll(PDO::FETCH_ASSOC);
 
-echo json_encode(['ok'=>true, 'pasajeros'=>$pasajeros]);
-exit;
+echo json_encode(['ok'=>true,'pasajeros'=>$pasajeros]);

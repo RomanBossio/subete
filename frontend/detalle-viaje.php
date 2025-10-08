@@ -25,6 +25,7 @@
       color: #333;
       line-height: 1.5;
     }
+    .status-salida { margin-top: 8px; font-size: 14px; color:#555; }
   </style>
 </head>
 <body>
@@ -36,7 +37,7 @@
 
   <div id="view" class="viaje-card"></div>
   <div id="infoRuta"></div>
-  <div id="infoClima"></div> <!-- Clima del día del viaje -->
+  <div id="infoClima"></div>
   <div id="msg" class="mt-2"></div>
   <div id="map"></div>
 </main>
@@ -62,11 +63,28 @@ function showMsg(text, type='info') {
   msg.className = type === 'success' ? 'alert success mt-2' : (type === 'error' ? 'alert error mt-2' : 'mt-2');
 }
 
+// 🔧 Parsear fecha/hora **en local** (evita interpretaciones UTC)
+function parseFechaLocal(str) {
+  // str viene como "YYYY-MM-DD HH:mm:ss.sss"
+  // Al reemplazar el espacio por 'T', los navegadores lo interpretan como hora local.
+  return new Date(String(str).replace(' ', 'T'));
+}
+
+function humanDiff(now, target) {
+  const ms = target - now;
+  const abs = Math.abs(ms);
+  const mins = Math.round(abs / 60000);
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  if (h <= 0) return `${m} min`;
+  return `${h} h ${m} min`;
+}
+
 // Mostrar clima según destino y fecha
 async function cargarClima(ciudad, fechaHora) {
   if (!ciudad || !fechaHora) return;
   try {
-    const fecha = fechaHora.split(' ')[0]; // tomamos solo YYYY-MM-DD
+    const fecha = fechaHora.split(' ')[0]; // YYYY-MM-DD
     const res = await fetch(`${API_CLIMA}?ciudad=${encodeURIComponent(ciudad)}&fecha=${fecha}`);
     const data = await res.json();
 
@@ -171,6 +189,15 @@ function initMap() {
     const precio = (Number(v.Precio) || 0).toLocaleString('es-AR');
     let disponibles = Number(v.Lugares_Disponibles) || 0;
 
+    // 🎯 parseo local y mensaje de estado de salida
+    const salida = parseFechaLocal(v.Fecha_Hora_Salida);
+    const ahora  = new Date();
+    const yaPaso = salida.getTime() <= ahora.getTime();
+    const diffTxt = humanDiff(ahora, salida);
+    const estadoHoraHTML = yaPaso
+      ? `La hora de salida ya pasó`
+      : `Aún no llegó la hora de salida (faltan ${diffTxt})`;
+
     view.innerHTML = `
       <div class="viaje-header">
         <h2>${v.Origen} → ${v.Destino}</h2>
@@ -183,6 +210,7 @@ function initMap() {
         <p><strong>Precio:</strong> $${precio}</p>
         <p><strong>Encomiendas:</strong> ${encom}</p>
         ${v.Detalles ? `<p class="extra">${v.Detalles}</p>` : '' }
+        <p id="status-hora" class="status-salida">${estadoHoraHTML}</p>
       </div>
 
       <div class="conductor-card">
@@ -199,6 +227,15 @@ function initMap() {
         <button class="btn reservar" id="btn-reservar" ${(!token || disponibles <= 0) ? 'disabled' : ''}>Reservar</button>
       </div>
     `;
+
+    // (Opcional) refrescar el mensaje cada 60s
+    setInterval(() => {
+      const ahora2 = new Date();
+      const yaPaso2 = salida.getTime() <= ahora2.getTime();
+      const txt = yaPaso2 ? 'La hora de salida ya pasó' : `Aún no llegó la hora de salida (faltan ${humanDiff(ahora2, salida)})`;
+      const el = document.getElementById('status-hora');
+      if (el) el.textContent = txt;
+    }, 60000);
 
     const btn = document.getElementById('btn-reservar');
     const inputCantidad = document.getElementById('cantidad');
