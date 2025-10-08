@@ -1,6 +1,6 @@
 <header class="app-header"> 
   <div class="brand">
-  <img src="/subete/frontend/img/hero-carpool.jpg" alt="Súbete" style="height:40px; vertical-align: middle; margin-right:8px;">
+  <img src="/subete/frontend/img/logo1.png" alt="Súbete" style="height:40px; vertical-align: middle; margin-right:8px;">
   Súbete
 </div>
 
