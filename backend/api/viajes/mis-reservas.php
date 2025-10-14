@@ -32,7 +32,7 @@ if (!$id_usuario) {
     exit;
 }
 
-// Traer reservas del usuario (incluyendo precio y estado del viaje)
+// Traer reservas del usuario (solo las que cumplen condición de 2 días o no calificadas)
 $sql = "
     SELECT 
         r.id_reserva,
@@ -44,15 +44,26 @@ $sql = "
         v.Destino,
         v.Fecha_Hora_Salida,
         v.Precio            AS Precio,
-        v.Estado            AS EstadoViaje
+        v.Estado            AS EstadoViaje,
+        u.Nombre AS Conductor_Nombre,
+        u.Apellido AS Conductor_Apellido,
+        u.Telefono AS Conductor_Telefono,
+        COALESCE((
+            SELECT AVG(Puntuacion) 
+            FROM calificaciones c 
+            WHERE c.ID_Conductor = v.ID_Usuario
+        ),0) AS Conductor_Promedio
     FROM reservas r
     JOIN viajes v ON r.id_viaje = v.ID_Viaje
+    JOIN usuarios u ON u.ID_Usuario = v.ID_Usuario
     WHERE r.id_usuario = ?
     ORDER BY r.fecha_reserva DESC
 ";
+
 $stmt = $pdo->prepare($sql);
 $stmt->execute([$id_usuario]);
 $reservas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
 
 // Post-procesado: precio_total y flag para efectivo
 foreach ($reservas as &$r) {

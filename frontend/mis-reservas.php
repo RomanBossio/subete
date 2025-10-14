@@ -25,7 +25,176 @@
     <button id="next-page" class="btn">Siguiente</button>
   </div>
 </main>
+<style>
+  /* =========================
+   Estilos para tarjetas de viajes
+========================= */
+.results {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
 
+.card {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+}
+
+.card h3 {
+  font-size: 1.2rem;
+  margin-bottom: 4px;
+  color: #007bff;
+}
+
+.card p {
+  margin: 2px 0;
+  font-size: 0.95rem;
+  color: #555;
+}
+
+.card strong {
+  color: #222;
+}
+
+.card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.card-actions .btn {
+  flex: 1;
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.card-actions .btn:hover {
+  opacity: 0.9;
+}
+
+.badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.badge.success { background-color: #28a745; }
+.badge.info    { background-color: #17a2b8; }
+.badge.warning { background-color: #ffc107; color: #222; }
+.badge.error   { background-color: #dc3545; }
+
+.calificar-box {
+  margin-top: 8px;
+  border-top: 1px solid #eee;
+  padding-top: 8px;
+}
+
+.calificar-box button {
+  font-size: 0.85rem;
+  padding: 4px 10px;
+}
+
+.calificar-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.calificar-form input[type="text"],
+.calificar-form select {
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 0.9rem;
+  width: 100%;
+}
+
+.calificar-msg {
+  font-size: 0.85rem;
+}
+
+ul {
+  padding-left: 16px;
+  margin: 4px 0 0 0;
+}
+
+ul li {
+  margin-bottom: 6px;
+  font-size: 0.9rem;
+}
+
+.muted {
+  color: #777;
+  font-size: 0.85rem;
+}
+
+.section-title {
+  font-size: 1.4rem;
+  color: #0a0b0dff;
+  margin-bottom: 8px;
+}
+
+/* Pagination buttons */
+.pagination .btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}
+
+.pagination .btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+/* =========================
+   Lista de pasajeros
+========================= */
+.card ul {
+  list-style-type: none; /* quitar los bullets */
+  padding-left: 0;
+  margin-top: 4px;
+}
+
+.card ul li {
+  font-family: 'Roboto', 'Arial', sans-serif; /* fuente más moderna */
+  font-size: 0.95rem;
+  color: #333;
+  line-height: 1.4;
+  padding: 4px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.card ul li:last-child {
+  border-bottom: none;
+}
+
+.card ul li strong {
+  color: #007bff; /* resalta nombres */
+  font-weight: 600;
+}
+
+</style>
 <script>
 /* =========================
    CONFIG & ENDPOINTS
@@ -154,6 +323,7 @@ async function cargarReservas() {
         <p class="muted">Fecha salida: ${r.Fecha_Hora_Salida}</p>
         <p>Asientos reservados: ${r.cantidad}</p>
         <p>Precio: $${precioTotal}</p>
+        <p>Conductor: <strong>${r.Conductor_Nombre} ${r.Conductor_Apellido}</strong></p>
         <p>Estado: <strong>${estadoReserva}</strong></p>
         <div class="card-status">${estadoVisual}</div>
         <div class="row card-actions">

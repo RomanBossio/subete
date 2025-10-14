@@ -26,6 +26,46 @@
       line-height: 1.5;
     }
     .status-salida { margin-top: 8px; font-size: 14px; color:#555; }
+
+    /* ⭐ Estilos para el rating */
+    .conductor-card {
+      background: #f9f9f9;
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .conductor-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .conductor-nombre {
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: #333;
+    }
+    .stars {
+      display: flex;
+      align-items: center;
+      font-size: 1.1rem;
+    }
+    .star {
+      color: #ccc;
+      margin-left: 2px;
+    }
+    .star.full {
+      color: #007bff;
+    }
+    .star.half {
+      background: linear-gradient(90deg, #007bff 50%, #ccc 50%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .star.empty {
+      color: #ccc;
+    }
   </style>
 </head>
 <body>
@@ -63,10 +103,7 @@ function showMsg(text, type='info') {
   msg.className = type === 'success' ? 'alert success mt-2' : (type === 'error' ? 'alert error mt-2' : 'mt-2');
 }
 
-// 🔧 Parsear fecha/hora **en local** (evita interpretaciones UTC)
 function parseFechaLocal(str) {
-  // str viene como "YYYY-MM-DD HH:mm:ss.sss"
-  // Al reemplazar el espacio por 'T', los navegadores lo interpretan como hora local.
   return new Date(String(str).replace(' ', 'T'));
 }
 
@@ -80,11 +117,24 @@ function humanDiff(now, target) {
   return `${h} h ${m} min`;
 }
 
-// Mostrar clima según destino y fecha
+// ⭐ Función para generar estrellas
+function getStarRatingHTML(rating) {
+  const maxStars = 5;
+  const fullStars = Math.floor(rating);
+  const halfStar = rating % 1 >= 0.5;
+  let html = '';
+
+  for (let i = 0; i < fullStars; i++) html += '<span class="star full">★</span>';
+  if (halfStar) html += '<span class="star half">★</span>';
+  for (let i = fullStars + (halfStar ? 1 : 0); i < maxStars; i++) html += '<span class="star empty">★</span>';
+
+  return `<div class="stars" title="${rating.toFixed(1)} / 5">${html}</div>`;
+}
+
 async function cargarClima(ciudad, fechaHora) {
   if (!ciudad || !fechaHora) return;
   try {
-    const fecha = fechaHora.split(' ')[0]; // YYYY-MM-DD
+    const fecha = fechaHora.split(' ')[0];
     const res = await fetch(`${API_CLIMA}?ciudad=${encodeURIComponent(ciudad)}&fecha=${fecha}`);
     const data = await res.json();
 
@@ -104,10 +154,8 @@ async function cargarClima(ciudad, fechaHora) {
   }
 }
 
-// Inicializar mapa y mostrar duración/distancia
 function initMap() {
   if (!viajeData) return;
-
   directionsService = new google.maps.DirectionsService();
   directionsRenderer = new google.maps.DirectionsRenderer();
   map = new google.maps.Map(document.getElementById("map"), {
@@ -159,14 +207,10 @@ function initMap() {
       const route = result.routes[0].overview_path;
       route.forEach(point => bounds.extend(point));
       map.fitBounds(bounds);
-    } else {
-      console.error("Error al cargar la ruta:", status);
-      alert("No se pudo cargar la ruta en el mapa.");
     }
   });
 }
 
-// Cargar datos del viaje
 (async () => {
   if (!id) {
     view.textContent = 'Falta id';
@@ -188,8 +232,6 @@ function initMap() {
     const encom = Number(v.Permite_Encomiendas) === 1 ? '✔ Acepta encomiendas' : 'No acepta encomiendas';
     const precio = (Number(v.Precio) || 0).toLocaleString('es-AR');
     let disponibles = Number(v.Lugares_Disponibles) || 0;
-
-    // 🎯 parseo local y mensaje de estado de salida
     const salida = parseFechaLocal(v.Fecha_Hora_Salida);
     const ahora  = new Date();
     const yaPaso = salida.getTime() <= ahora.getTime();
@@ -213,9 +255,15 @@ function initMap() {
         <p id="status-hora" class="status-salida">${estadoHoraHTML}</p>
       </div>
 
+      <!-- ⭐ Conductor con rating -->
       <div class="conductor-card">
         <h3>Conductor</h3>
-        <p>${v.Conductor_Nombre ?? ''} ${v.Conductor_Apellido ?? ''}</p>
+        <div class="conductor-header">
+          <p class="conductor-nombre">${v.Conductor_Nombre ?? ''} ${v.Conductor_Apellido ?? ''}</p>
+          <div class="rating">
+            ${getStarRatingHTML(Number(v.Conductor_Rating) || 0)}
+          </div>
+        </div>
         ${v.Conductor_Telefono ? `<p class="muted">📞 ${v.Conductor_Telefono}</p>` : ''}
       </div>
 
@@ -228,7 +276,7 @@ function initMap() {
       </div>
     `;
 
-    // (Opcional) refrescar el mensaje cada 60s
+    // ⏱ Actualización automática del estado
     setInterval(() => {
       const ahora2 = new Date();
       const yaPaso2 = salida.getTime() <= ahora2.getTime();
@@ -285,10 +333,7 @@ function initMap() {
       } catch(e) { showMsg('Error al reservar (problema de conexión)','error'); }
     });
 
-    // Cargar clima del destino y fecha del viaje
     cargarClima(v.Destino, v.Fecha_Hora_Salida);
-
-    // Inicializar mapa después de cargar datos
     initMap();
 
   } catch (e) {
@@ -297,7 +342,6 @@ function initMap() {
   }
 })();
 
-// Cargar Google Maps
 const gmapsScript = document.createElement('script');
 gmapsScript.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyDOsUtRsZPG_LIRJtxULIBfPmG2XrCnJ4M";
 gmapsScript.async = true;

@@ -42,30 +42,51 @@ header('Expires: 0');
     }
 
     /* ---------------- HERO FULL WIDTH ---------------- */
-    .hero {
-      position: relative;
-      width: 100vw;
-      height: 400px; /* ajustable */
-      overflow: hidden;
-    }
-    .hero img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-    .hero-text {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 3rem;
-      font-weight: bold;
-      color: #fff;
-      text-align: center;
-      text-shadow: 0 2px 10px rgba(0,0,0,0.5);
-      padding: 0 1rem;
-    }
+ .hero {
+  position: relative;
+  width: 100vw;
+  height: 400px; /* ajustable */
+  overflow: hidden;
+}
+
+.hero img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Efecto de sombreado azul desvanecido */
+.hero::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 102, 255, 0.4),   /* azul suave arriba */
+    rgba(0, 0, 0, 0.6) 60%,  /* mezcla hacia oscuro */
+    rgba(0, 0, 0, 0.8) 100%  /* más oscuro al final */
+  );
+  z-index: 1;
+}
+
+.hero-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 3rem;
+  font-weight: bold;
+  color: #fff;
+  text-align: center;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+  padding: 0 1rem;
+  z-index: 2; /* Asegura que el texto quede encima del sombreado */
+}
+
 
     /* ---------------- BOTONES ---------------- */
     .container {
@@ -145,7 +166,7 @@ header('Expires: 0');
 
   <!-- HERO -->
   <section class="hero">
-    <img src="/subete/frontend/img/header.png" alt="Compartir viajes">
+    <img src="/subete/frontend/img/ruta.png" alt="Compartir viajes">
     <div class="hero-text">Compartí Viajes. Conectá. Ahorrá.</div>
   </section>
 
