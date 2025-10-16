@@ -57,107 +57,107 @@ declare(strict_types=1);
     .results .card .btn:hover {
       background-color: #1565c0;
     }
+
     /* ==== Estilo de card para el formulario de búsqueda ==== */
-.find-form {
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 16px;
-  padding: 25px 20px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-  margin-bottom: 20px;
-}
+    .find-form {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 16px;
+      padding: 25px 20px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+      margin-bottom: 20px;
+    }
 
-.find-form h2 {
-  margin-top: 0;
-  margin-bottom: 20px;
-  color: #1e88e5; /* Color celeste del título */
-  text-align: center;
-}
+    .find-form h2 {
+      margin-top: 0;
+      margin-bottom: 20px;
+      color: #1e88e5;
+      text-align: center;
+    }
 
-.find-form label {
-  display: block;
-  font-weight: 500;
-  margin-bottom: 6px;
-  color: #333;
-}
+    .find-form label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 6px;
+      color: #333;
+    }
 
-.find-form input {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  font-size: 1rem;
-  margin-bottom: 12px;
-}
+    .find-form input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1rem;
+      margin-bottom: 12px;
+    }
 
-.find-form .checkbox-group {
-  display: flex;
-  align-items: center;
-  margin-bottom: 12px;
-}
+    .find-form .checkbox-group {
+      display: flex;
+      align-items: center;
+      margin-bottom: 12px;
+    }
 
-.find-form .checkbox-group input {
-  width: auto;
-  margin-right: 8px;
-}
+    .find-form .checkbox-group input {
+      width: auto;
+      margin-right: 8px;
+    }
 
-.find-form .btn.primary {
-  width: 100%;
-  background-color: #1e88e5;
-  color: white;
-  border: none;
-  padding: 12px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: background 0.3s;
-  font-size: 1rem;
-  margin-bottom: 6px;
-}
+    .find-form .btn.primary {
+      width: 100%;
+      background-color: #1e88e5;
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.3s;
+      font-size: 1rem;
+      margin-bottom: 6px;
+    }
 
-.find-form .btn.primary:hover {
-  background-color: #1565c0;
-}
+    .find-form .btn.primary:hover {
+      background-color: #1565c0;
+    }
 
-.find-form .btn {
-  width: 100%;
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid #1e88e5;
-  background: white;
-  color: #1e88e5;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.3s, color 0.3s;
-  margin-bottom: 6px;
-}
+    .find-form .btn {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #1e88e5;
+      background: white;
+      color: #1e88e5;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.3s, color 0.3s;
+      margin-bottom: 6px;
+    }
 
-.find-form .btn:hover {
-  background-color: #1e88e5;
-  color: white;
-}
+    .find-form .btn:hover {
+      background-color: #1e88e5;
+      color: white;
+    }
 
-/* Grids dentro del formulario */
-.find-form .grid.cols-2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 15px;
-}
+    .find-form .grid.cols-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
 
-@media(max-width: 600px){
-  .find-form .grid.cols-2 {
-    grid-template-columns: 1fr;
-  }
-}
-
+    @media(max-width: 600px){
+      .find-form .grid.cols-2 {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
+
 <body>
   <?php $page='buscar'; require __DIR__ . '/partials/header.php'; ?>
 
   <main class="container">
 
     <form id="searchForm" class="find-form">
-      <h2>Buscar viajes</h2> <!-- Título dentro de la card -->
+      <h2>Buscar viajes</h2>
       <div class="grid">
         <div class="col-3">
           <label>Origen</label>
@@ -173,14 +173,17 @@ declare(strict_types=1);
           <label>Fecha</label>
           <input id="fecha" type="date" />
         </div>
+
         <div class="col-2">
           <label>Asientos mínimos</label>
           <input id="asientos" type="number" min="1" placeholder="1" />
         </div>
+
         <div class="col-2">
           <label>Precio máx</label>
           <input id="precioMax" type="number" min="0" step="50" placeholder="2500" />
         </div>
+
         <div class="col-2">
           <label>&nbsp;</label>
           <div class="row">
@@ -188,10 +191,12 @@ declare(strict_types=1);
             <span>Acepta encomiendas</span>
           </div>
         </div>
+
         <div class="col-6 row">
           <button class="btn primary" type="submit">Buscar</button>
           <button class="btn" type="button" id="limpiar">Limpiar</button>
           <button class="btn" type="button" id="toggleConductor">Ver datos del conductor</button>
+          <button class="btn" type="button" id="vozBuscar">🎤 Buscar por voz</button>
         </div>
       </div>
     </form>
@@ -356,6 +361,66 @@ document.getElementById('searchForm').addEventListener('submit', e => {
 <!-- Cargar Google Maps con Places API -->
 <script async defer
   src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBnDDeYhxpb6H8zyDJA38h7k_Xs-HT5OB4&libraries=places&callback=initAutocomplete">
+</script>
+
+<script>
+// ==== BÚSQUEDA POR VOZ CON IA ====
+const vozBtn = document.getElementById('vozBuscar');
+
+if (vozBtn && 'webkitSpeechRecognition' in window) {
+  const reconocimiento = new webkitSpeechRecognition();
+  reconocimiento.lang = 'es-ES';
+  reconocimiento.continuous = false;
+  reconocimiento.interimResults = false;
+
+  reconocimiento.onstart = () => {
+    vozBtn.textContent = '🎙 Escuchando...';
+    vozBtn.disabled = true;
+  };
+
+  reconocimiento.onresult = async (event) => {
+    const texto = event.results[0][0].transcript;
+    console.log('🎤 Texto reconocido:', texto);
+    vozBtn.textContent = '🧠 Procesando...';
+
+    try {
+      const res = await fetch('/subete/backend/api/viajes/ia-buscar.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mensaje: texto })
+      });
+      const data = await res.json();
+      console.log('🧠 Respuesta IA:', data);
+
+      if (data.origen) document.getElementById('origen').value = data.origen;
+      if (data.destino) document.getElementById('destino').value = data.destino;
+      if (data.fecha) document.getElementById('fecha').value = data.fecha;
+      if (data.asientos) document.getElementById('asientos').value = data.asientos; // 👈 NUEVO
+
+      buscar(); // ejecuta búsqueda automáticamente
+    } catch (err) {
+      console.error(err);
+      alert('Error al procesar la búsqueda por voz.');
+    } finally {
+      vozBtn.textContent = '🎤 Buscar por voz';
+      vozBtn.disabled = false;
+    }
+  };
+
+  reconocimiento.onerror = (e) => {
+    console.error('Error en reconocimiento de voz:', e);
+    alert('No se pudo reconocer la voz. Intentá de nuevo.');
+    vozBtn.textContent = '🎤 Buscar por voz';
+    vozBtn.disabled = false;
+  };
+
+  vozBtn.addEventListener('click', () => {
+    reconocimiento.start();
+  });
+} else if (vozBtn) {
+  vozBtn.textContent = '🎤 No soportado';
+  vozBtn.disabled = true;
+}
 </script>
 
 <?php require __DIR__ . '/partials/footer.php'; ?>
