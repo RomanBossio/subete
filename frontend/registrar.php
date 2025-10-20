@@ -8,7 +8,6 @@
   <link rel="stylesheet" href="/subete/frontend/css/app.css?v=1.0">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <style>
-    /* ===== Fondo con imagen difuminada ===== */
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
@@ -18,7 +17,6 @@
       overflow-x: hidden;
     }
 
-    /* Capa difuminada encima del fondo */
     body::before {
       content: "";
       position: fixed;
@@ -28,7 +26,6 @@
       z-index: -1;
     }
 
-    /* Centrado del contenido */
     main.container {
       display: flex;
       justify-content: center;
@@ -38,7 +35,6 @@
       text-align: center;
     }
 
-    /* Botón volver */
     a.btn {
       background: rgba(255,255,255,0.85);
       color: #1e88e5;
@@ -50,12 +46,8 @@
       transition: background 0.3s;
       margin-bottom: 15px;
     }
+    a.btn:hover { background: white; }
 
-    a.btn:hover {
-      background: white;
-    }
-
-    /* Tarjeta del registro */
     .card {
       background: rgba(255, 255, 255, 0.92);
       backdrop-filter: blur(8px);
@@ -66,35 +58,12 @@
       max-width: 520px;
     }
 
-    .auth-logo img {
-      max-height: 60px;
-      object-fit: contain;
-    }
+    .auth-logo img { max-height: 60px; object-fit: contain; }
+    .auth-title { font-size: 1.6rem; color: #333; margin-bottom: 10px; }
+    .auth-subtitle { color: #555; font-size: 0.95rem; margin-bottom: 20px; }
 
-    .auth-title {
-      font-size: 1.6rem;
-      color: #333;
-      margin-bottom: 10px;
-    }
-
-    .auth-subtitle {
-      color: #555;
-      font-size: 0.95rem;
-      margin-bottom: 20px;
-    }
-
-    .form-group {
-      text-align: left;
-      margin-bottom: 15px;
-    }
-
-    label {
-      display: block;
-      font-weight: 500;
-      margin-bottom: 5px;
-      color: #333;
-    }
-
+    .form-group { text-align: left; margin-bottom: 15px; }
+    label { display: block; font-weight: 500; margin-bottom: 5px; color: #333; }
     input {
       width: 100%;
       padding: 10px;
@@ -114,55 +83,38 @@
       font-weight: 600;
       transition: background 0.3s;
     }
+    .btn.primary:hover { background-color: #1565c0; }
 
-    .btn.primary:hover {
-      background-color: #1565c0;
-    }
+    a { color: #1e88e5; text-decoration: none; }
+    a:hover { text-decoration: underline; }
 
-    a {
-      color: #1e88e5;
-      text-decoration: none;
-    }
-
-    a:hover {
-      text-decoration: underline;
-    }
-
-    .alert {
-      display: none;
-      margin-bottom: 10px;
-      padding: 8px;
-      border-radius: 6px;
-      font-weight: 600;
-    }
-
+    .alert { display: none; margin-bottom: 10px; padding: 8px; border-radius: 6px; font-weight: 600; }
     .alert.error { background: rgba(255, 0, 0, 0.1); color: #c00; }
     .alert.success { background: rgba(0, 200, 0, 0.1); color: #060; }
 
-    .modal-footer {
-      color: #333;
-    }
+    .modal-footer { color: #333; }
 
     .grid.cols-2 {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
     }
+    @media (max-width: 600px) { .grid.cols-2 { grid-template-columns: 1fr; } }
 
-    @media (max-width: 600px) {
-      .grid.cols-2 {
-        grid-template-columns: 1fr;
-      }
+    main.container {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
     }
-    /* --- Centrado vertical completo del contenido --- */
-main.container {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center; /* centra verticalmente */
-  align-items: center;     /* centra horizontalmente */
-}
 
+    .terms-link {
+      color: #1e88e5;
+      text-decoration: underline;
+      font-weight: 500;
+    }
+    .terms-link:hover { color: #1565c0; }
   </style>
 </head>
 <body>
@@ -183,7 +135,7 @@ main.container {
         <h1 class="auth-title">Crear Cuenta</h1>
         <p class="auth-subtitle muted">Regístrate para acceder</p>
 
-        <form id="registerForm" class="section">
+        <form id="registerForm" class="section" enctype="multipart/form-data">
           <div class="grid cols-2">
             <div class="form-group">
               <label for="registerNombre">Nombre</label>
@@ -193,6 +145,11 @@ main.container {
               <label for="registerApellido">Apellido</label>
               <input type="text" id="registerApellido" required />
             </div>
+          </div>
+
+          <div class="form-group">
+            <label for="registerDocumento">Documento</label>
+            <input type="text" id="registerDocumento" required maxlength="20" />
           </div>
 
           <div class="form-group">
@@ -208,6 +165,19 @@ main.container {
             <input type="password" id="registerPassword" required />
           </div>
 
+          <!-- NUEVO CAMPO: Foto del DNI -->
+          <div class="form-group">
+            <label for="registerDniFoto">Foto del DNI</label>
+            <input type="file" id="registerDniFoto" accept="image/*" required />
+          </div>
+
+          <div class="form-group">
+            <label>
+              <input type="checkbox" id="registerTerms" />
+              Acepto los <a href="/subete/frontend/terminos.php" target="_blank" class="terms-link">Términos y Condiciones</a>
+            </label>
+          </div>
+
           <button type="submit" class="btn primary">
             <i class="fas fa-user-plus"></i> Crear Cuenta
           </button>
@@ -220,6 +190,65 @@ main.container {
     </div>
   </main>
 
-  <script src="/subete/frontend/js/registrar.js"></script>
+  <script>
+    const form = document.getElementById('registerForm');
+    const errorDiv = document.getElementById('error');
+    const successDiv = document.getElementById('success');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      errorDiv.style.display = 'none';
+      successDiv.style.display = 'none';
+
+      // Validación obligatoria del checkbox de términos
+      const termsChecked = document.getElementById('registerTerms').checked;
+      if (!termsChecked) {
+        errorDiv.textContent = 'Debes aceptar los Términos y Condiciones para registrarte.';
+        errorDiv.style.display = 'block';
+        return;
+      }
+
+      // Usamos FormData para incluir la foto del DNI
+      const data = new FormData();
+      data.append('nombre', document.getElementById('registerNombre').value.trim());
+      data.append('apellido', document.getElementById('registerApellido').value.trim());
+      data.append('documento', document.getElementById('registerDocumento').value.trim());
+      data.append('email', document.getElementById('registerEmail').value.trim());
+      data.append('telefono', document.getElementById('registerTelefono').value.trim());
+      data.append('password', document.getElementById('registerPassword').value);
+      data.append('dniFoto', document.getElementById('registerDniFoto').files[0]);
+
+      try {
+        const res = await fetch('/subete/backend/api/auth/register.php', {
+          method: 'POST',
+          body: data
+        });
+
+        const result = await res.json();
+        const status = Number(result.status);
+
+        if (!status || status !== 201) {
+          errorDiv.textContent = result.message || 'Error desconocido';
+          errorDiv.style.display = 'block';
+        } else {
+          successDiv.textContent = result.message || 'Usuario registrado correctamente';
+          successDiv.style.color = 'green';
+          successDiv.style.display = 'block';
+
+          form.reset();
+
+          // redirige al login después de 2 segundos
+          setTimeout(() => {
+            window.location.href = '/subete/frontend/login.php';
+          }, 2000);
+        }
+
+      } catch (err) {
+        errorDiv.textContent = 'Error de conexión al servidor';
+        errorDiv.style.display = 'block';
+      }
+    });
+  </script>
 </body>
 </html>
