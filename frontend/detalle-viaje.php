@@ -248,6 +248,7 @@ function initMap() {
       </div>
 
       <div class="viaje-detalles">
+      <p><strong>Tipo de vehículo:</strong> ${v.Tipo_Vehiculo ?? 'No especificado'}</p> <!-- ✅ -->
         <p><strong>Asientos disponibles:</strong> <span id="lugares-disponibles">${disponibles}</span></p>
         <p><strong>Precio:</strong> $${precio}</p>
         <p><strong>Encomiendas:</strong> ${encom}</p>

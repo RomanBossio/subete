@@ -1,2 +1,3 @@
 /vendor/
 *.log
+backend/api/viajes/debug_reserva.log

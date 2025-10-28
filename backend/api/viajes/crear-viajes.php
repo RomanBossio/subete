@@ -12,7 +12,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 require_once __DIR__ . '/../../config/db.php';
-
 $pdo = db();
 
 // 🔐 Validar token en el header
@@ -22,7 +21,6 @@ if (!isset($headers['Authorization'])) {
   echo json_encode(['error' => 'Token faltante']);
   exit;
 }
-
 list($type, $token) = explode(' ', $headers['Authorization'], 2);
 if (strcasecmp($type, 'Bearer') !== 0 || empty($token)) {
   http_response_code(401);
@@ -34,31 +32,18 @@ if (strcasecmp($type, 'Bearer') !== 0 || empty($token)) {
 $stmt = $pdo->prepare("SELECT id_usuario, expira_en FROM sesiones WHERE token = ? LIMIT 1");
 $stmt->execute([$token]);
 $sesion = $stmt->fetch();
-
-if (!$sesion) {
-  http_response_code(401);
-  echo json_encode(['error' => 'Token inválido']);
-  exit;
-}
-if (new DateTime() > new DateTime($sesion['expira_en'])) {
-  http_response_code(401);
-  echo json_encode(['error' => 'Token expirado']);
-  exit;
-}
+if (!$sesion) { http_response_code(401); echo json_encode(['error' => 'Token inválido']); exit; }
+if (new DateTime() > new DateTime($sesion['expira_en'])) { http_response_code(401); echo json_encode(['error' => 'Token expirado']); exit; }
 
 $id_usuario = (int)$sesion['id_usuario'];
 
 // Leer JSON del body
 $raw = file_get_contents('php://input');
 $data = json_decode($raw, true);
-if (!is_array($data)) {
-  http_response_code(400);
-  echo json_encode(['error' => 'JSON inválido']);
-  exit;
-}
+if (!is_array($data)) { http_response_code(400); echo json_encode(['error' => 'JSON inválido']); exit; }
 
-// Validar campos requeridos (sin id_usuario ahora)
-$required = ['origen','destino','fecha_hora_salida','lugares','precio'];
+// Validar campos requeridos
+$required = ['origen','destino','fecha_hora_salida','lugares','precio','tipoVehiculo'];
 foreach ($required as $f) {
   if (!isset($data[$f]) || trim((string)$data[$f]) === '') {
     http_response_code(400);
@@ -67,20 +52,23 @@ foreach ($required as $f) {
   }
 }
 
-$origen   = trim((string)$data['origen']);
-$destino  = trim((string)$data['destino']);
-$fecha    = trim((string)$data['fecha_hora_salida']);
-$lugares  = (int)$data['lugares'];
-$precio   = (float)$data['precio'];
-$permite  = isset($data['permite_encomiendas']) ? (int)$data['permite_encomiendas'] : 0;
-$detalles = isset($data['detalles']) ? trim((string)$data['detalles']) : null;
+$origen        = trim((string)$data['origen']);
+$destino       = trim((string)$data['destino']);
+$fecha         = trim((string)$data['fecha_hora_salida']);
+$lugares       = (int)$data['lugares'];
+$precio        = (float)$data['precio'];
+$permite       = isset($data['permite_encomiendas']) ? (int)$data['permite_encomiendas'] : 0;
+$detalles      = isset($data['detalles']) ? trim((string)$data['detalles']) : null;
+$tipoVehiculo  = trim((string)$data['tipoVehiculo']);
 
+// Validar valores
 if ($lugares <= 0 || $precio <= 0) {
   http_response_code(400);
   echo json_encode(['error' => 'Valores inválidos']);
   exit;
 }
 
+// Validar fecha
 $dt = DateTime::createFromFormat('Y-m-d H:i:s', $fecha);
 if (!$dt || $dt->format('Y-m-d H:i:s') !== $fecha) {
   http_response_code(400);
@@ -88,11 +76,19 @@ if (!$dt || $dt->format('Y-m-d H:i:s') !== $fecha) {
   exit;
 }
 
+// Validar tipo de vehículo
+$tiposValidos = ['Auto','Camioneta','Tráfic','Colectivo','Moto'];
+if (!in_array($tipoVehiculo, $tiposValidos)) {
+  http_response_code(400);
+  echo json_encode(['error'=>'Tipo de vehículo inválido']);
+  exit;
+}
+
 // Insertar viaje
 try {
   $sql = "INSERT INTO viajes
-    (ID_Usuario, Origen, Destino, Fecha_Hora_Salida, Lugares_Disponibles, Precio, Permite_Encomiendas, Detalles, Estado)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Disponible')";
+    (ID_Usuario, Origen, Destino, Fecha_Hora_Salida, Lugares_Disponibles, Precio, Permite_Encomiendas, Detalles, Tipo_Vehiculo, Estado)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'Disponible')";
   $stmt = $pdo->prepare($sql);
   $stmt->execute([
     $id_usuario,
@@ -102,7 +98,8 @@ try {
     $lugares,
     $precio,
     $permite,
-    $detalles
+    $detalles,
+    $tipoVehiculo
   ]);
 
   http_response_code(201);

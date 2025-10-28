@@ -189,15 +189,29 @@ main.container {
           </label>
         </div>
 
-        <div class="grid cols-2">
-          <label>Asientos
-            <input type="number" name="lugares" min="1" max="6" required>
-          </label>
-          <div class="checkbox-group">
-            <input type="checkbox" id="encomiendas">
-            <label for="encomiendas">Permite encomiendas</label>
-          </div>
-        </div>
+       <div class="grid cols-2">
+  <label>Tipo de vehículo
+    <select id="tipoVehiculo" name="tipoVehiculo" required>
+      <option value="">Seleccioná un tipo</option>
+      <option value="Auto">Auto</option>
+      <option value="Camioneta">Camioneta</option>
+      <option value="Camion">Camión</option>
+      <option value="Trafic">Tráfic</option>
+      <option value="Colectivo">Colectivo</option>
+      <option value="Moto">Moto</option>
+    </select>
+  </label>
+
+  <label>Asientos
+    <input type="number" name="lugares" id="lugares" min="1" required>
+  </label>
+</div>
+
+<div class="checkbox-group">
+  <input type="checkbox" id="encomiendas">
+  <label for="encomiendas">Permite encomiendas</label>
+</div>
+
 
         <label>Descripción
           <textarea name="detalles" rows="3" placeholder="Opcional"></textarea>
@@ -341,6 +355,41 @@ function initAutocomplete() {
   }
 })();
 
+// ---- Limitar asientos según tipo de vehículo ----
+const tipoVehiculo = document.getElementById('tipoVehiculo');
+const inputAsientos = document.getElementById('lugares');
+
+tipoVehiculo.addEventListener('change', () => {
+  let maxAsientos = 6; // valor por defecto
+
+  switch (tipoVehiculo.value) {
+    case 'Auto':
+      maxAsientos = 4;
+      break;
+       case 'Camioneta':
+      maxAsientos = 6;
+      break;
+    case 'Camion':
+      maxAsientos = 2;
+      break;
+    case 'Trafic':
+      maxAsientos = 30;
+      break;
+    case 'Colectivo':
+      maxAsientos = 60;
+      break;
+    case 'Moto':
+      maxAsientos = 1;
+      break;
+  }
+
+  inputAsientos.max = maxAsientos;
+  if (parseInt(inputAsientos.value) > maxAsientos) {
+    inputAsientos.value = maxAsientos;
+  }
+
+  inputAsientos.placeholder = `Máximo ${maxAsientos} asientos`;
+});
 
 </script>
 

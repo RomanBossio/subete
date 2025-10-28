@@ -38,6 +38,7 @@ SELECT
   v.Permite_Encomiendas,
   v.Detalles,
   v.Estado,
+  v.Tipo_Vehiculo,
   u.Nombre AS Conductor_Nombre,
   u.Apellido AS Conductor_Apellido,
   u.Telefono AS Conductor_Telefono,
