@@ -199,7 +199,7 @@ ul li {
 /* =========================
    CONFIG & ENDPOINTS
 ========================= */
-const token = localStorage.getItem('token');
+
 const API_RESERVAS   = '/subete/backend/api/viajes/mis-reservas.php';
 const API_CANCELAR   = '/subete/backend/api/viajes/cancelar-reserva.php';
 const API_VIAJES     = '/subete/backend/api/viajes/mis-viajes-publicados.php';
